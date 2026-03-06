@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Fotos Hochladen – Wedding Companion{% endblock %}
+{% block header_title %}Fotos Hochladen{% endblock %}
+
+{% block content %}
+<div class="upload-area" id="uploadArea">
+  <input type="file" id="fileInput" accept="image/*" multiple>
+  <div class="upload-icon">📷</div>
+  <strong>Foto auswählen</strong>
+  <p>Tippe hier, um ein Foto hochzuladen</p>
+  <p>JPG, PNG, HEIC, WEBP · max. 20 MB</p>
+  <div class="file-name" id="fileName"></div>
+</div>
+
+<div class="upload-progress mt-12" id="uploadProgress">
+  <div class="upload-progress-bar" id="progressBar"></div>
+</div>
+
+<button class="btn btn-primary mt-16" id="uploadBtn" style="display:none;">
+  Hochladen
+</button>
+
+<div class="feedback feedback-success mt-16" id="feedbackSuccess">
+  ✓ Foto erfolgreich hochgeladen!
+</div>
+<div class="feedback feedback-error mt-16" id="feedbackError"></div>
+
+<a href="/galerie" class="btn btn-outline mt-12" id="galleryBtn" style="display:none;">
+  Zur Live Galerie →
+</a>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const area = document.getElementById('uploadArea');
+  const input = document.getElementById('fileInput');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const fileName = document.getElementById('fileName');
+  const progressWrap = document.getElementById('uploadProgress');
+  const progressBar = document.getElementById('progressBar');
+  const feedbackSuccess = document.getElementById('feedbackSuccess');
+  const feedbackError = document.getElementById('feedbackError');
+  const galleryBtn = document.getElementById('galleryBtn');
+
+  let selectedFiles = [];
+
+  area.addEventListener('click', () => input.click());
+
+  area.addEventListener('dragover', e => {
+    e.preventDefault();
+    area.classList.add('dragover');
+  });
+
+  area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+
+  area.addEventListener('drop', e => {
+    e.preventDefault();
+    area.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+
+  input.addEventListener('change', () => handleFiles(input.files));
+
+  function handleFiles(files) {
+    selectedFiles = Array.from(files);
+    if (selectedFiles.length === 0) return;
+    const names = selectedFiles.map(f => f.name).join(', ');
+    fileName.textContent = selectedFiles.length === 1
+      ? selectedFiles[0].name
+      : `${selectedFiles.length} Fotos ausgewählt`;
+    uploadBtn.style.display = 'flex';
+    feedbackSuccess.classList.remove('show');
+    feedbackError.classList.remove('show');
+    galleryBtn.style.display = 'none';
+  }
+
+  uploadBtn.addEventListener('click', async () => {
+    if (selectedFiles.length === 0) return;
+
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = 'Wird hochgeladen…';
+    progressWrap.classList.add('show');
+    feedbackSuccess.classList.remove('show');
+    feedbackError.classList.remove('show');
+    galleryBtn.style.display = 'none';
+
+    let success = 0;
+    let failed = 0;
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+      progressBar.style.width = `${Math.round((i / selectedFiles.length) * 100)}%`;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const resp = await fetch('/fotos/upload', { method: 'POST', body: formData });
+        const data = await resp.json();
+        if (data.ok) {
+          success++;
+        } else {
+          failed++;
+          showError(data.error || 'Unbekannter Fehler.');
+        }
+      } catch {
+        failed++;
+        showError('Netzwerkfehler beim Hochladen.');
+      }
+    }
+
+    progressBar.style.width = '100%';
+
+    uploadBtn.disabled = false;
+    uploadBtn.textContent = 'Hochladen';
+
+    if (success > 0) {
+      feedbackSuccess.textContent = success === 1
+        ? '✓ Foto erfolgreich hochgeladen!'
+        : `✓ ${success} Fotos erfolgreich hochgeladen!`;
+      feedbackSuccess.classList.add('show');
+      galleryBtn.style.display = 'flex';
+    }
+
+    selectedFiles = [];
+    fileName.textContent = '';
+    uploadBtn.style.display = 'none';
+    input.value = '';
+
+    setTimeout(() => progressWrap.classList.remove('show'), 800);
+  });
+
+  function showError(msg) {
+    feedbackError.textContent = '✗ ' + msg;
+    feedbackError.classList.add('show');
+  }
+</script>
+{% endblock %}

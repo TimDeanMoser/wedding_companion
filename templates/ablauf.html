@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Ablauf – Wedding Companion{% endblock %}
+{% block header_title %}Ablauf{% endblock %}
+
+{% block content %}
+<div class="timeline" id="timeline">
+  {% for event in events %}
+  <div class="timeline-item" data-time="{{ event.time }}" id="tl-{{ loop.index0 }}">
+    <div class="tl-time">{{ event.time }}</div>
+    <div class="tl-label">{{ event.label }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="debug-bar">
+  <label for="debugTime">🕐 Zeit simulieren (nur zum Testen):</label>
+  <input type="time" id="debugTime" placeholder="HH:MM">
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function parseMinutes(timeStr) {
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  function getCurrentMinutes() {
+    const debugInput = document.getElementById('debugTime');
+    if (debugInput.value) {
+      return parseMinutes(debugInput.value);
+    }
+    const now = new Date();
+    return now.getHours() * 60 + now.getMinutes();
+  }
+
+  function updateTimeline() {
+    const items = document.querySelectorAll('.timeline-item');
+    const times = Array.from(items).map(el => parseMinutes(el.dataset.time));
+    const now = getCurrentMinutes();
+
+    let activeIndex = -1;
+    for (let i = 0; i < times.length; i++) {
+      if (now >= times[i]) {
+        activeIndex = i;
+      }
+    }
+
+    items.forEach((el, i) => {
+      el.classList.remove('past', 'active');
+      if (i < activeIndex) {
+        el.classList.add('past');
+      } else if (i === activeIndex) {
+        el.classList.add('active');
+      }
+    });
+
+    if (activeIndex >= 0) {
+      const activeEl = items[activeIndex];
+      activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  updateTimeline();
+
+  document.getElementById('debugTime').addEventListener('change', updateTimeline);
+  document.getElementById('debugTime').addEventListener('input', updateTimeline);
+
+  // Re-check every minute
+  setInterval(updateTimeline, 60_000);
+</script>
+{% endblock %}

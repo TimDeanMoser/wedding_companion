@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Live Galerie – Wedding Companion{% endblock %}
+{% block header_title %}Live Galerie{% endblock %}
+
+{% block content %}
+<div class="gallery-count" id="galleryCount"></div>
+<div class="gallery-grid" id="galleryGrid"></div>
+<div class="gallery-empty" id="galleryEmpty" style="display:none;">
+  <p>Noch keine Fotos hochgeladen.</p>
+  <p>Sei der Erste! 📷</p>
+</div>
+
+<a href="/galerie/download" class="btn btn-accent mt-24" id="downloadBtn" style="display:none;">
+  ⬇ Alle Fotos herunterladen
+</a>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">✕</button>
+  <img src="" id="lightboxImg" alt="">
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let knownUrls = [];
+
+  async function loadGallery() {
+    try {
+      const resp = await fetch('/api/gallery');
+      const images = await resp.json();
+
+      const grid = document.getElementById('galleryGrid');
+      const empty = document.getElementById('galleryEmpty');
+      const count = document.getElementById('galleryCount');
+      const dlBtn = document.getElementById('downloadBtn');
+
+      if (images.length === 0) {
+        grid.style.display = 'none';
+        empty.style.display = 'block';
+        dlBtn.style.display = 'none';
+        count.textContent = '';
+        return;
+      }
+
+      grid.style.display = 'grid';
+      empty.style.display = 'none';
+      dlBtn.style.display = 'flex';
+      count.textContent = `${images.length} Foto${images.length !== 1 ? 's' : ''}`;
+
+      const newUrls = images.map(i => i.url);
+      if (JSON.stringify(newUrls) === JSON.stringify(knownUrls)) return;
+      knownUrls = newUrls;
+
+      grid.innerHTML = '';
+      images.forEach(img => {
+        const el = document.createElement('img');
+        el.src = img.url;
+        el.alt = img.name;
+        el.loading = 'lazy';
+        el.addEventListener('click', () => openLightbox(img.url));
+        grid.appendChild(el);
+      });
+    } catch (e) {
+      console.error('Gallery load error', e);
+    }
+  }
+
+  function openLightbox(src) {
+    const lb = document.getElementById('lightbox');
+    document.getElementById('lightboxImg').src = src;
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+    document.getElementById('lightboxImg').src = '';
+  }
+
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  document.getElementById('lightbox').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeLightbox();
+  });
+
+  loadGallery();
+  setInterval(loadGallery, 10_000);
+</script>
+{% endblock %}

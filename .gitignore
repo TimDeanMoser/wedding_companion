@@ -1,0 +1,8 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+public/pictures/*
+!public/pictures/.gitkeep
+data/songs.json

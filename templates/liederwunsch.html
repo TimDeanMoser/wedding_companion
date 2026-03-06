@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Liederwunsch – Wedding Companion{% endblock %}
+{% block header_title %}Liederwunsch{% endblock %}
+
+{% block content %}
+<div class="search-row">
+  <input
+    type="text"
+    class="search-input"
+    id="searchInput"
+    placeholder="Song oder Künstler suchen…"
+    autocomplete="off"
+    autocorrect="off"
+    spellcheck="false"
+  >
+  <button class="search-btn" id="searchBtn">Suchen</button>
+</div>
+
+<div class="flex-col gap-8 mt-16" id="searchResults"></div>
+
+<div class="feedback feedback-error mt-12" id="searchError"></div>
+
+<button class="btn btn-primary mt-16" id="addBtn" style="display:none;">
+  Zur Playlist hinzufügen
+</button>
+
+<div class="feedback feedback-success mt-12" id="addSuccess"></div>
+<div class="feedback feedback-error mt-12" id="addError"></div>
+
+<div class="queue-section">
+  <details id="queueDetails">
+    <summary>Aktuelle Playlist</summary>
+    <div class="queue-list" id="queueList">
+      <div style="color: var(--text-muted); font-size: 0.9rem; padding: 8px 0;">Wird geladen…</div>
+    </div>
+  </details>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let selectedTrack = null;
+
+  const searchInput = document.getElementById('searchInput');
+  const searchBtn = document.getElementById('searchBtn');
+  const searchResults = document.getElementById('searchResults');
+  const searchError = document.getElementById('searchError');
+  const addBtn = document.getElementById('addBtn');
+  const addSuccess = document.getElementById('addSuccess');
+  const addError = document.getElementById('addError');
+  const queueList = document.getElementById('queueList');
+
+  async function doSearch() {
+    const q = searchInput.value.trim();
+    if (!q) return;
+
+    searchBtn.disabled = true;
+    searchBtn.textContent = '…';
+    searchResults.innerHTML = '';
+    searchError.classList.remove('show');
+    addBtn.style.display = 'none';
+    selectedTrack = null;
+
+    try {
+      const resp = await fetch(`/api/spotify/search?q=${encodeURIComponent(q)}`);
+      const data = await resp.json();
+
+      if (data.error) {
+        searchError.textContent = data.error;
+        searchError.classList.add('show');
+        return;
+      }
+
+      if (data.length === 0) {
+        searchError.textContent = 'Keine Songs gefunden.';
+        searchError.classList.add('show');
+        return;
+      }
+
+      data.forEach(track => {
+        const card = document.createElement('div');
+        card.className = 'track-card';
+        card.dataset.id = track.id;
+        card.innerHTML = `
+          ${track.cover
+            ? `<img class="track-cover" src="${track.cover}" alt="${escHtml(track.name)}">`
+            : `<div class="track-cover-placeholder">🎵</div>`}
+          <div class="track-info">
+            <div class="track-name">${escHtml(track.name)}</div>
+            <div class="track-artist">${escHtml(track.artist)}</div>
+          </div>
+        `;
+        card.addEventListener('click', () => selectTrack(card, track));
+        searchResults.appendChild(card);
+      });
+    } catch {
+      searchError.textContent = 'Netzwerkfehler. Bitte nochmals versuchen.';
+      searchError.classList.add('show');
+    } finally {
+      searchBtn.disabled = false;
+      searchBtn.textContent = 'Suchen';
+    }
+  }
+
+  function selectTrack(card, track) {
+    document.querySelectorAll('.track-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedTrack = track;
+    addBtn.style.display = 'flex';
+    addSuccess.classList.remove('show');
+    addError.classList.remove('show');
+  }
+
+  addBtn.addEventListener('click', async () => {
+    if (!selectedTrack) return;
+
+    addBtn.disabled = true;
+    addBtn.textContent = 'Wird hinzugefügt…';
+    addSuccess.classList.remove('show');
+    addError.classList.remove('show');
+
+    try {
+      const resp = await fetch('/api/songs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(selectedTrack),
+      });
+      const data = await resp.json();
+
+      if (data.ok) {
+        if (data.duplicate) {
+          addSuccess.textContent = '✓ Song ist bereits in der Playlist!';
+        } else {
+          addSuccess.textContent = `✓ "${selectedTrack.name}" wurde hinzugefügt!`;
+        }
+        addSuccess.classList.add('show');
+        addBtn.style.display = 'none';
+        selectedTrack = null;
+        document.querySelectorAll('.track-card').forEach(c => c.classList.remove('selected'));
+        loadQueue();
+
+        const details = document.getElementById('queueDetails');
+        details.open = true;
+      } else {
+        addError.textContent = data.error || 'Fehler beim Hinzufügen.';
+        addError.classList.add('show');
+      }
+    } catch {
+      addError.textContent = 'Netzwerkfehler.';
+      addError.classList.add('show');
+    } finally {
+      addBtn.disabled = false;
+      addBtn.textContent = 'Zur Playlist hinzufügen';
+    }
+  });
+
+  async function loadQueue() {
+    try {
+      const resp = await fetch('/api/songs');
+      const songs = await resp.json();
+
+      if (songs.length === 0) {
+        queueList.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; padding: 8px 0;">Noch keine Liederwünsche.</div>';
+        return;
+      }
+
+      queueList.innerHTML = '';
+      songs.forEach((song, i) => {
+        const item = document.createElement('div');
+        item.className = 'queue-item';
+        item.innerHTML = `
+          <span class="queue-num">${i + 1}</span>
+          ${song.cover
+            ? `<img src="${song.cover}" alt="${escHtml(song.name)}" style="width:44px;height:44px;border-radius:6px;object-fit:cover;">`
+            : `<div class="track-cover-placeholder" style="width:44px;height:44px;font-size:1.1rem;">🎵</div>`}
+          <div class="track-info">
+            <div class="track-name">${escHtml(song.name)}</div>
+            <div class="track-artist">${escHtml(song.artist)}</div>
+          </div>
+        `;
+        queueList.appendChild(item);
+      });
+    } catch {
+      queueList.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem;">Fehler beim Laden.</div>';
+    }
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  searchBtn.addEventListener('click', doSearch);
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSearch();
+  });
+
+  loadQueue();
+</script>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Zustupf – Wedding Companion{% endblock %}
+{% block header_title %}Zustupf{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align:center; margin-bottom: 32px;">
+  <div style="font-size: 2.5rem; margin-bottom: 8px;">💝</div>
+  <p style="color: var(--text-muted); font-size: 0.95rem;">
+    Danke von Herzen für euren Zustupf!
+  </p>
+</div>
+
+{% if iban %}
+<div class="zustupf-section">
+  <div class="zustupf-label">Banküberweisung (IBAN)</div>
+  <div class="iban-display" id="ibanDisplay">{{ iban }}</div>
+  <button class="btn btn-accent" id="copyBtn">
+    📋 IBAN kopieren
+  </button>
+  <div class="copy-feedback" id="copyFeedback"></div>
+</div>
+{% endif %}
+
+<div class="divider">oder</div>
+
+<div class="zustupf-section">
+  <div class="zustupf-label">Mit Twint bezahlen</div>
+  <a
+    href="https://go.twint.ch/1/e/tw?tw=acq.o7zuwsHWReSGv8MoH8FXxvGOwJn717XFdNxbgv3eepWBcIPbZWYZ0W5a_L9axNcI."
+    target="_blank"
+    rel="noopener noreferrer"
+    class="btn btn-primary"
+  >
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+    </svg>
+    Mit Twint bezahlen
+  </a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if iban %}
+<script>
+  const iban = {{ iban | tojson }};
+  const copyBtn = document.getElementById('copyBtn');
+  const feedback = document.getElementById('copyFeedback');
+
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(iban);
+      feedback.textContent = '✓ IBAN kopiert!';
+      feedback.style.color = '#155724';
+      copyBtn.textContent = '✓ Kopiert!';
+      setTimeout(() => {
+        feedback.textContent = '';
+        copyBtn.innerHTML = '📋 IBAN kopieren';
+      }, 3000);
+    } catch {
+      // Fallback for older browsers / non-HTTPS
+      try {
+        const el = document.createElement('textarea');
+        el.value = iban;
+        el.style.position = 'fixed';
+        el.style.opacity = '0';
+        document.body.appendChild(el);
+        el.focus();
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        feedback.textContent = '✓ IBAN kopiert!';
+        feedback.style.color = '#155724';
+      } catch {
+        feedback.textContent = '✗ Kopieren nicht möglich. Bitte manuell kopieren.';
+        feedback.style.color = '#721c24';
+      }
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

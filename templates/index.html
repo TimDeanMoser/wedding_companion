@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Wedding Companion{% endblock %}
+
+{% block header %}
+<header class="site-header" style="justify-content: center;">
+  <span class="header-title" style="text-align:center; font-size:1.1rem;">Wedding Companion</span>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="home-hero">
+  <h1>Wedding Companion</h1>
+  <p>Schön, dass du dabei bist! 🎉</p>
+</div>
+
+<nav class="nav-buttons">
+  <a href="/ablauf" class="nav-btn">
+    <span class="icon">📋</span>
+    Ablauf
+  </a>
+  <a href="/fotos" class="nav-btn">
+    <span class="icon">📷</span>
+    Fotos Hochladen
+  </a>
+  <a href="/galerie" class="nav-btn">
+    <span class="icon">🖼️</span>
+    Live Galerie
+  </a>
+  <a href="/liederwunsch" class="nav-btn">
+    <span class="icon">🎵</span>
+    Liederwunsch
+  </a>
+  <a href="/zustupf" class="nav-btn">
+    <span class="icon">💝</span>
+    Zustupf
+  </a>
+</nav>
+{% endblock %}
