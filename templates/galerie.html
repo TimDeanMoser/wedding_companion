@@ -92,7 +92,7 @@
 
         const state = likeState.get(img.name) || { liked: false, count: 0 };
         const likeBtn = document.createElement('button');
-        likeBtn.className = 'like-btn' + (state.liked ? ' liked' : '');
+        likeBtn.className = 'like-btn' + (state.liked ? ' liked' : '') + (state.count > 0 ? ' has-likes' : '');
         likeBtn.setAttribute('aria-label', 'Gefällt mir');
         likeBtn.innerHTML = `<span class="material-symbols-outlined">favorite</span>${state.count > 0 ? `<span class="like-count">${state.count}</span>` : ''}`;
         likeBtn.addEventListener('click', async (e) => {
@@ -102,7 +102,15 @@
           if (currentImg && currentImg.name === img.name) updateLightboxLike();
         });
 
-        wrapper.appendChild(el);
+        if (img.uploader) {
+          const uploaderEl = document.createElement('div');
+          uploaderEl.className = 'gallery-uploader';
+          uploaderEl.textContent = img.uploader;
+          wrapper.appendChild(el);
+          wrapper.appendChild(uploaderEl);
+        } else {
+          wrapper.appendChild(el);
+        }
         wrapper.appendChild(likeBtn);
         wrapper.addEventListener('click', () => openLightbox(img));
         grid.appendChild(wrapper);
@@ -130,7 +138,7 @@
 
   function updateGridLikeBtn(filename, btn) {
     const state = likeState.get(filename) || { liked: false, count: 0 };
-    btn.className = 'like-btn' + (state.liked ? ' liked' : '');
+    btn.className = 'like-btn' + (state.liked ? ' liked' : '') + (state.count > 0 ? ' has-likes' : '');
     btn.innerHTML = `<span class="material-symbols-outlined">favorite</span>${state.count > 0 ? `<span class="like-count">${state.count}</span>` : ''}`;
   }
 
