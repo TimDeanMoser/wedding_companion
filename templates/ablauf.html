@@ -13,36 +13,45 @@
   {% endfor %}
 </div>
 
+{% if is_admin %}
 <div class="debug-bar">
-  <label for="debugTime">🕐 Zeit simulieren (nur zum Testen):</label>
+  <label for="debugTime">Zeit simulieren (nur zum Testen):</label>
   <input type="time" id="debugTime" placeholder="HH:MM">
 </div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
 <script>
-  function parseMinutes(timeStr) {
-    const [h, m] = timeStr.split(':').map(Number);
-    return h * 60 + m;
-  }
+  const WEDDING_DATE = {{ wedding_date | tojson }};
 
-  function getCurrentMinutes() {
-    const debugInput = document.getElementById('debugTime');
-    if (debugInput.value) {
-      return parseMinutes(debugInput.value);
+  function getEventDates(items) {
+    // Build monotonically-increasing Date array (handle post-midnight events)
+    const dates = Array.from(items).map(el => new Date(`${WEDDING_DATE}T${el.dataset.time}`));
+    for (let i = 1; i < dates.length; i++) {
+      if (dates[i] <= dates[i - 1]) {
+        dates[i] = new Date(dates[i].getTime() + 24 * 60 * 60 * 1000);
+      }
     }
-    const now = new Date();
-    return now.getHours() * 60 + now.getMinutes();
+    return dates;
   }
 
-  function updateTimeline() {
+  function getCurrentDate() {
+    const debugInput = document.getElementById('debugTime');
+    if (debugInput && debugInput.value) {
+      return new Date(`${WEDDING_DATE}T${debugInput.value}`);
+    }
+    return new Date();
+  }
+
+  function updateTimeline(scroll = false) {
     const items = document.querySelectorAll('.timeline-item');
-    const times = Array.from(items).map(el => parseMinutes(el.dataset.time));
-    const now = getCurrentMinutes();
+    const dates = getEventDates(items);
+    const now = getCurrentDate();
 
     let activeIndex = -1;
-    for (let i = 0; i < times.length; i++) {
-      if (now >= times[i]) {
+    for (let i = 0; i < dates.length; i++) {
+      if (now >= dates[i]) {
         activeIndex = i;
       }
     }
@@ -56,18 +65,20 @@
       }
     });
 
-    if (activeIndex >= 0) {
-      const activeEl = items[activeIndex];
-      activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (scroll && activeIndex >= 0) {
+      items[activeIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }
 
-  updateTimeline();
+  updateTimeline(true);
 
-  document.getElementById('debugTime').addEventListener('change', updateTimeline);
-  document.getElementById('debugTime').addEventListener('input', updateTimeline);
+  const debugInput = document.getElementById('debugTime');
+  if (debugInput) {
+    debugInput.addEventListener('change', () => updateTimeline(false));
+    debugInput.addEventListener('input', () => updateTimeline(false));
+  }
 
-  // Re-check every minute
-  setInterval(updateTimeline, 60_000);
+  // Re-check every minute and scroll to current event
+  setInterval(() => updateTimeline(true), 60_000);
 </script>
 {% endblock %}

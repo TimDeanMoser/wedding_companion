@@ -382,18 +382,6 @@ body {
   gap: 8px;
 }
 
-.gallery-grid img {
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: filter var(--transition);
-}
-
-.gallery-grid img:active {
-  filter: brightness(0.85);
-}
 
 .gallery-empty {
   text-align: center;
@@ -815,6 +803,339 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ── Gallery items with like overlay ── */
+.gallery-item {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.gallery-item img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+  transition: filter var(--transition);
+}
+
+.gallery-item:active img {
+  filter: brightness(0.85);
+}
+
+.like-btn {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(0,0,0,0.45);
+  color: rgba(255,255,255,0.8);
+  border: none;
+  border-radius: 20px;
+  padding: 4px 8px 4px 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  line-height: 1;
+}
+
+.like-btn .material-symbols-outlined {
+  font-size: 1rem;
+}
+
+.like-btn.liked {
+  background: rgba(227,106,106,0.85);
+  color: #fff;
+}
+
+.like-btn .like-count {
+  font-size: 0.78rem;
+}
+
+/* Lightbox actions row */
+.lightbox-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.lightbox-like-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.15);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.lightbox-like-btn.liked {
+  background: rgba(227,106,106,0.75);
+  color: #fff;
+}
+
+.lightbox-like-btn .material-symbols-outlined {
+  font-size: 1.2rem;
+}
+
+.lightbox-delete-btn {
+  display: flex;
+  align-items: center;
+  color: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.1);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.lightbox-delete-btn:active {
+  background: rgba(227,106,106,0.6);
+}
+
+.lightbox-delete-btn .material-symbols-outlined {
+  font-size: 1.2rem;
+}
+
+/* Queue delete button */
+.queue-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: color var(--transition), background var(--transition);
+}
+
+.queue-delete-btn:active {
+  color: var(--primary);
+  background: rgba(227,106,106,0.12);
+}
+
+.queue-delete-btn .material-symbols-outlined {
+  font-size: 1.2rem;
+}
+
+/* ── Admin page ── */
+.nav-btn-admin {
+  border: 2px solid var(--primary);
+}
+
+.admin-stats {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.admin-stat {
+  flex: 1;
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 14px 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.admin-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-section {
+  margin-top: 28px;
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.admin-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.admin-list-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-list-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-list-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color var(--transition), background var(--transition);
+}
+
+.admin-icon-btn.danger:active {
+  color: var(--primary);
+  background: rgba(227,106,106,0.12);
+}
+
+.admin-icon-btn .material-symbols-outlined {
+  font-size: 1.2rem;
+}
+
+.admin-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 4px;
+  padding: 2px 5px;
+  vertical-align: middle;
+}
+
+.admin-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 8px 0;
+}
+
+.admin-row {
+  display: flex;
+  gap: 10px;
+}
+
+.btn.danger {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Timeline editor */
+.timeline-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.tl-time-input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--accent);
+  background: var(--panel);
+  font-size: 0.95rem;
+  color: var(--text);
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.tl-label-input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--accent);
+  background: var(--panel);
+  font-size: 0.95rem;
+  color: var(--text);
+  outline: none;
+}
+
+.tl-label-input:focus,
+.tl-time-input:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+/* QR codes */
+.qr-grid {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.qr-card {
+  flex: 1;
+  min-width: 140px;
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.qr-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.qr-card canvas {
+  border-radius: 8px;
+  max-width: 100%;
+}
+
+.qr-url {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  word-break: break-all;
+  text-align: center;
 }
 
 /* ── Utilities ── */

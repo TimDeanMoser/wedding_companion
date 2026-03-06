@@ -8,23 +8,42 @@
 <div class="gallery-grid" id="galleryGrid"></div>
 <div class="gallery-empty" id="galleryEmpty" style="display:none;">
   <p>Noch keine Fotos hochgeladen.</p>
-  <p>Sei der Erste! 📷</p>
+  <p>Sei der Erste! <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;">photo_camera</span></p>
 </div>
-
-<a href="/galerie/download" class="btn btn-accent mt-24" id="downloadBtn" style="display:none;">
-  ⬇ Alle Fotos herunterladen
-</a>
 
 <!-- Lightbox -->
 <div class="lightbox" id="lightbox">
   <button class="lightbox-close" id="lightboxClose">✕</button>
-  <img src="" id="lightboxImg" alt="">
+  <div class="lightbox-content">
+    <img src="" id="lightboxImg" alt="">
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+    <div class="lightbox-actions">
+      <button class="lightbox-like-btn" id="lightboxLikeBtn" aria-label="Gefällt mir">
+        <span class="material-symbols-outlined">favorite</span>
+        <span id="lightboxLikeCount"></span>
+      </button>
+      <a class="lightbox-download" id="lightboxDownload" download>
+        <span class="material-symbols-outlined" aria-hidden="true">download</span>
+        Speichern
+      </a>
+      {% if is_admin %}
+      <button class="lightbox-delete-btn" id="lightboxDeleteBtn" aria-label="Foto löschen">
+        <span class="material-symbols-outlined">delete</span>
+      </button>
+      {% endif %}
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  let knownUrls = [];
+  const IS_ADMIN = {{ is_admin | tojson }};
+
+  // client-side state: filename -> {liked, count}
+  const likeState = new Map();
+  let currentImg = null;
+  let cacheKey = '';
 
   async function loadGallery() {
     try {
@@ -34,42 +53,119 @@
       const grid = document.getElementById('galleryGrid');
       const empty = document.getElementById('galleryEmpty');
       const count = document.getElementById('galleryCount');
-      const dlBtn = document.getElementById('downloadBtn');
 
       if (images.length === 0) {
         grid.style.display = 'none';
         empty.style.display = 'block';
-        dlBtn.style.display = 'none';
         count.textContent = '';
+        cacheKey = '';
         return;
       }
 
       grid.style.display = 'grid';
       empty.style.display = 'none';
-      dlBtn.style.display = 'flex';
       count.textContent = `${images.length} Foto${images.length !== 1 ? 's' : ''}`;
 
-      const newUrls = images.map(i => i.url);
-      if (JSON.stringify(newUrls) === JSON.stringify(knownUrls)) return;
-      knownUrls = newUrls;
+      const newKey = images.map(i => `${i.name}:${i.likes}`).join(',');
+      if (newKey === cacheKey) return;
+      cacheKey = newKey;
+
+      // Update like state from server
+      images.forEach(img => {
+        likeState.set(img.name, { liked: img.liked, count: img.likes });
+      });
 
       grid.innerHTML = '';
       images.forEach(img => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'gallery-item';
+
         const el = document.createElement('img');
         el.src = img.url;
-        el.alt = img.name;
+        el.alt = '';
         el.loading = 'lazy';
-        el.addEventListener('click', () => openLightbox(img.url));
-        grid.appendChild(el);
+
+        const state = likeState.get(img.name) || { liked: false, count: 0 };
+        const likeBtn = document.createElement('button');
+        likeBtn.className = 'like-btn' + (state.liked ? ' liked' : '');
+        likeBtn.setAttribute('aria-label', 'Gefällt mir');
+        likeBtn.innerHTML = `<span class="material-symbols-outlined">favorite</span>${state.count > 0 ? `<span class="like-count">${state.count}</span>` : ''}`;
+        likeBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          await toggleLike(img.name);
+          updateGridLikeBtn(img.name, likeBtn);
+          if (currentImg && currentImg.name === img.name) updateLightboxLike();
+        });
+
+        wrapper.appendChild(el);
+        wrapper.appendChild(likeBtn);
+        wrapper.addEventListener('click', () => openLightbox(img));
+        grid.appendChild(wrapper);
       });
     } catch (e) {
       console.error('Gallery load error', e);
     }
   }
 
-  function openLightbox(src) {
+  async function toggleLike(filename) {
+    try {
+      const resp = await fetch('/api/gallery/like', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename }),
+      });
+      const data = await resp.json();
+      likeState.set(filename, { liked: data.liked, count: data.count });
+      // Invalidate cache so next poll re-renders with updated counts
+      cacheKey = '';
+    } catch (e) {
+      console.error('Like error', e);
+    }
+  }
+
+  function updateGridLikeBtn(filename, btn) {
+    const state = likeState.get(filename) || { liked: false, count: 0 };
+    btn.className = 'like-btn' + (state.liked ? ' liked' : '');
+    btn.innerHTML = `<span class="material-symbols-outlined">favorite</span>${state.count > 0 ? `<span class="like-count">${state.count}</span>` : ''}`;
+  }
+
+  function updateLightboxLike() {
+    if (!currentImg) return;
+    const state = likeState.get(currentImg.name) || { liked: false, count: 0 };
+    const btn = document.getElementById('lightboxLikeBtn');
+    btn.classList.toggle('liked', state.liked);
+    document.getElementById('lightboxLikeCount').textContent = state.count > 0 ? state.count : '';
+  }
+
+  function formatTime(isoStr) {
+    if (!isoStr) return '';
+    try {
+      return new Date(isoStr).toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'short' });
+    } catch {
+      return '';
+    }
+  }
+
+  function openLightbox(img) {
+    currentImg = img;
     const lb = document.getElementById('lightbox');
-    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightboxImg').src = img.url;
+
+    const caption = document.getElementById('lightboxCaption');
+    if (img.uploader) {
+      const time = formatTime(img.uploaded_at);
+      caption.textContent = `von ${img.uploader}${time ? ' · ' + time : ''}`;
+      caption.style.display = 'block';
+    } else {
+      caption.style.display = 'none';
+    }
+
+    const dlLink = document.getElementById('lightboxDownload');
+    dlLink.href = img.url;
+    dlLink.download = img.name;
+
+    updateLightboxLike();
+
     lb.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -78,12 +174,46 @@
     document.getElementById('lightbox').classList.remove('open');
     document.body.style.overflow = '';
     document.getElementById('lightboxImg').src = '';
+    currentImg = null;
   }
 
   document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
   document.getElementById('lightbox').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeLightbox();
   });
+
+  document.getElementById('lightboxLikeBtn').addEventListener('click', async () => {
+    if (!currentImg) return;
+    await toggleLike(currentImg.name);
+    updateLightboxLike();
+    // Also update grid btn if visible
+    const gridBtns = document.querySelectorAll('.gallery-item');
+    gridBtns.forEach(wrapper => {
+      const img = wrapper.querySelector('img');
+      if (img && img.src.endsWith(currentImg.url.split('/').pop())) {
+        const btn = wrapper.querySelector('.like-btn');
+        if (btn) updateGridLikeBtn(currentImg.name, btn);
+      }
+    });
+  });
+
+  {% if is_admin %}
+  document.getElementById('lightboxDeleteBtn').addEventListener('click', async () => {
+    if (!currentImg) return;
+    if (!confirm(`Foto von "${currentImg.uploader || 'unbekannt'}" löschen?`)) return;
+    try {
+      const resp = await fetch(`/api/admin/photos/${encodeURIComponent(currentImg.name)}`, { method: 'DELETE' });
+      const data = await resp.json();
+      if (data.ok) {
+        closeLightbox();
+        cacheKey = '';
+        loadGallery();
+      }
+    } catch (e) {
+      console.error('Delete error', e);
+    }
+  });
+  {% endif %}
 
   loadGallery();
   setInterval(loadGallery, 10_000);

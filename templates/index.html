@@ -33,6 +33,12 @@
     <span class="icon"><span class="material-symbols-outlined">volunteer_activism</span></span>
     Zustupf
   </a>
+  {% if is_admin %}
+  <a href="/admin" class="nav-btn nav-btn-admin">
+    <span class="icon"><span class="material-symbols-outlined">admin_panel_settings</span></span>
+    Admin
+  </a>
+  {% endif %}
 </nav>
 {% endblock %}
 

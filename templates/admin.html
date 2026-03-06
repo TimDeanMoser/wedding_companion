@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Admin – Wedding Companion{% endblock %}
+{% block header_title %}Admin{% endblock %}
+
+{% block content %}
+
+<!-- Stats row -->
+<div class="admin-stats">
+  <div class="admin-stat">
+    <span class="admin-stat-value">{{ users | length }}</span>
+    <span class="admin-stat-label">Benutzer</span>
+  </div>
+  <div class="admin-stat">
+    <span class="admin-stat-value">{{ photo_count }}</span>
+    <span class="admin-stat-label">Fotos</span>
+  </div>
+  <div class="admin-stat">
+    <span class="admin-stat-value">{{ songs | length }}</span>
+    <span class="admin-stat-label">Songs</span>
+  </div>
+</div>
+
+<!-- Songs -->
+<div class="admin-section">
+  <h2 class="section-header">Songs</h2>
+  {% if songs %}
+  <div class="admin-list" id="songsList">
+    {% for song in songs | reverse %}
+    <div class="admin-list-item" id="song-{{ song.id }}">
+      <div class="admin-list-info">
+        <div class="admin-list-title">{{ song.name }}</div>
+        <div class="admin-list-sub">{{ song.artist }}{% if song.session_name %} · {{ song.session_name }}{% endif %}</div>
+      </div>
+      <button class="admin-icon-btn danger" onclick="deleteSong('{{ song.id }}', '{{ song.name | replace("'", "\\'") }}')" aria-label="Song löschen">
+        <span class="material-symbols-outlined">delete</span>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="admin-empty">Keine Songs.</p>
+  {% endif %}
+  <button class="btn btn-outline mt-12" id="clearSongsBtn">
+    <span class="material-symbols-outlined">delete_sweep</span>
+    Alle Songs löschen
+  </button>
+</div>
+
+<!-- Fotos -->
+<div class="admin-section">
+  <h2 class="section-header">Fotos</h2>
+  <div class="admin-row">
+    <a href="/admin/photos/download" class="btn btn-panel" style="flex:1;">
+      <span class="material-symbols-outlined">download</span>
+      Alle herunterladen
+    </a>
+    <button class="btn btn-outline danger" id="clearPhotosBtn" style="flex:1;">
+      <span class="material-symbols-outlined">delete_sweep</span>
+      Alle löschen
+    </button>
+  </div>
+</div>
+
+<!-- Benutzer -->
+<div class="admin-section">
+  <h2 class="section-header">Benutzer</h2>
+  {% if users %}
+  <div class="admin-list">
+    {% for u in users %}
+    <div class="admin-list-item">
+      <div class="admin-list-info">
+        <div class="admin-list-title">{{ u.name }}{% if u.is_admin %} <span class="admin-badge">Admin</span>{% endif %}</div>
+        <div class="admin-list-sub">{{ u.created_at[:16] | replace('T', ' ') }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="admin-empty">Keine Benutzer.</p>
+  {% endif %}
+</div>
+
+<!-- Ablauf / Timeline editor -->
+<div class="admin-section">
+  <h2 class="section-header">Ablauf bearbeiten</h2>
+  <div id="timelineEditor">
+    {% for ev in events %}
+    <div class="timeline-row" data-index="{{ loop.index0 }}">
+      <input type="time" class="tl-time-input" value="{{ ev.time }}">
+      <input type="text" class="tl-label-input" value="{{ ev.label }}" placeholder="Beschreibung">
+      <button class="admin-icon-btn danger" onclick="this.closest('.timeline-row').remove()" aria-label="Eintrag löschen">
+        <span class="material-symbols-outlined">delete</span>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  <button class="btn btn-panel mt-12" id="addTlRowBtn">
+    <span class="material-symbols-outlined">add</span>
+    Eintrag hinzufügen
+  </button>
+  <button class="btn btn-primary mt-8" id="saveTlBtn">
+    <span class="material-symbols-outlined">save</span>
+    Ablauf speichern
+  </button>
+  <div class="feedback feedback-success mt-8" id="tlSuccess"></div>
+  <div class="feedback feedback-error mt-8" id="tlError"></div>
+</div>
+
+<!-- Spotify -->
+<div class="admin-section">
+  <h2 class="section-header">Spotify</h2>
+  <div class="admin-list-item" style="background: var(--panel); border-radius: var(--radius); padding: 12px 16px;">
+    <div class="admin-list-info">
+      <div class="admin-list-title">
+        {% if spotify_connected %}
+        <span style="color: #2e7d32;">Verbunden</span>
+        {% else %}
+        <span style="color: #c62828;">Nicht verbunden</span>
+        {% endif %}
+      </div>
+      <div class="admin-list-sub">Spotify Queue-Integration</div>
+    </div>
+    <span class="material-symbols-outlined" style="color: {% if spotify_connected %}#2e7d32{% else %}#c62828{% endif %}; font-size: 1.6rem;">
+      {% if spotify_connected %}check_circle{% else %}cancel{% endif %}
+    </span>
+  </div>
+  <a href="/admin/spotify/authorize" class="btn btn-primary mt-12">
+    <span class="material-symbols-outlined">link</span>
+    Spotify {% if spotify_connected %}neu {% endif %}verbinden
+  </a>
+</div>
+
+<!-- QR Codes -->
+<div class="admin-section">
+  <h2 class="section-header">QR-Codes</h2>
+  <div class="qr-grid">
+    <div class="qr-card">
+      <div class="qr-label">Gäste</div>
+      <canvas id="qrGuest"></canvas>
+      <div class="qr-url">{{ guest_url }}</div>
+    </div>
+    <div class="qr-card">
+      <div class="qr-label">Admin</div>
+      <canvas id="qrAdmin"></canvas>
+      <div class="qr-url">{{ admin_url }}</div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script>
+  // QR codes
+  QRCode.toCanvas(document.getElementById('qrGuest'), {{ guest_url | tojson }}, { width: 180, margin: 1 });
+  QRCode.toCanvas(document.getElementById('qrAdmin'), {{ admin_url | tojson }}, { width: 180, margin: 1 });
+
+  // Delete single song
+  async function deleteSong(id, name) {
+    if (!confirm(`"${name}" löschen?`)) return;
+    try {
+      const resp = await fetch(`/api/admin/songs/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      const data = await resp.json();
+      if (data.ok) {
+        document.getElementById(`song-${id}`)?.remove();
+      }
+    } catch (e) {
+      console.error('Delete song error', e);
+    }
+  }
+
+  // Clear all songs
+  document.getElementById('clearSongsBtn').addEventListener('click', async () => {
+    if (!confirm('Alle Songs löschen?')) return;
+    try {
+      const resp = await fetch('/api/admin/songs', { method: 'DELETE' });
+      const data = await resp.json();
+      if (data.ok) {
+        document.getElementById('songsList')?.remove();
+        document.getElementById('clearSongsBtn').insertAdjacentHTML('beforebegin', '<p class="admin-empty">Keine Songs.</p>');
+      }
+    } catch (e) {
+      console.error('Clear songs error', e);
+    }
+  });
+
+  // Clear all photos
+  document.getElementById('clearPhotosBtn').addEventListener('click', async () => {
+    if (!confirm('Alle Fotos unwiderruflich löschen?')) return;
+    try {
+      await fetch('/api/admin/photos', { method: 'DELETE' });
+      window.location.reload();
+    } catch (e) {
+      console.error('Clear photos error', e);
+    }
+  });
+
+  // Timeline editor
+  document.getElementById('addTlRowBtn').addEventListener('click', () => {
+    const editor = document.getElementById('timelineEditor');
+    const row = document.createElement('div');
+    row.className = 'timeline-row';
+    row.innerHTML = `
+      <input type="time" class="tl-time-input" value="">
+      <input type="text" class="tl-label-input" placeholder="Beschreibung">
+      <button class="admin-icon-btn danger" onclick="this.closest('.timeline-row').remove()" aria-label="Eintrag löschen">
+        <span class="material-symbols-outlined">delete</span>
+      </button>
+    `;
+    editor.appendChild(row);
+  });
+
+  document.getElementById('saveTlBtn').addEventListener('click', async () => {
+    const rows = document.querySelectorAll('#timelineEditor .timeline-row');
+    const events = Array.from(rows).map(row => ({
+      time: row.querySelector('.tl-time-input').value,
+      label: row.querySelector('.tl-label-input').value.trim(),
+    })).filter(ev => ev.time && ev.label);
+
+    const success = document.getElementById('tlSuccess');
+    const error = document.getElementById('tlError');
+    success.classList.remove('show');
+    error.classList.remove('show');
+
+    try {
+      const resp = await fetch('/api/admin/timeline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(events),
+      });
+      const data = await resp.json();
+      if (data.ok) {
+        success.textContent = '✓ Ablauf gespeichert!';
+        success.classList.add('show');
+      } else {
+        error.textContent = data.error || 'Fehler beim Speichern.';
+        error.classList.add('show');
+      }
+    } catch (e) {
+      error.textContent = 'Netzwerkfehler.';
+      error.classList.add('show');
+    }
+  });
+</script>
+{% endblock %}

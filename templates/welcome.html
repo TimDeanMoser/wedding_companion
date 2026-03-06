@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Willkommen – Wedding Companion{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block content %}
+<div class="welcome-page">
+  <div class="welcome-hero">
+    <span class="material-symbols-outlined welcome-heart" aria-hidden="true">favorite</span>
+    <h1>Wedding Companion</h1>
+    <p>Wie heisst du?</p>
+  </div>
+
+  <form class="welcome-form" method="post" action="/welcome">
+    <input type="hidden" name="next" value="{{ next }}">
+    {% if pw_prefilled %}
+    <input type="hidden" name="pw" value="{{ pw }}">
+    {% else %}
+    <input
+      type="password"
+      name="pw"
+      class="welcome-input"
+      placeholder="Passwort"
+      autocomplete="off"
+      required
+      autofocus
+    >
+    {% endif %}
+    <input
+      type="text"
+      name="name"
+      class="welcome-input"
+      placeholder="Dein Name"
+      maxlength="30"
+      autocomplete="given-name"
+      autocorrect="off"
+      spellcheck="false"
+      required
+      {% if pw_prefilled %}autofocus{% endif %}
+    >
+    {% if error %}
+    <div class="feedback feedback-error show">{{ error }}</div>
+    {% endif %}
+    <button type="submit" class="btn btn-primary">
+      Los geht's
+    </button>
+  </form>
+</div>
+{% endblock %}

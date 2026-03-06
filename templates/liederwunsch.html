@@ -4,6 +4,12 @@
 {% block header_title %}Liederwunsch{% endblock %}
 
 {% block content %}
+{% if not spotify_ready %}
+<div class="feedback feedback-error show" style="margin-bottom:16px;">
+  Spotify nicht verbunden – bitte Tim fragen!
+</div>
+{% endif %}
+
 <div class="search-row">
   <div class="search-input-wrap">
     <input
@@ -24,7 +30,7 @@
 
 <div class="feedback feedback-error mt-12" id="searchError"></div>
 
-<button class="btn btn-primary mt-16" id="addBtn" style="display:none;">
+<button class="btn btn-primary mt-16" id="addBtn" style="display:none;" {% if not spotify_ready %}disabled{% endif %}>
   Zur Playlist hinzufügen
 </button>
 
@@ -41,6 +47,9 @@
 
 {% block scripts %}
 <script>
+  const IS_ADMIN = {{ is_admin | tojson }};
+  const SPOTIFY_READY = {{ spotify_ready | tojson }};
+
   let selectedTrack = null;
 
   const searchInput = document.getElementById('searchInput');
@@ -110,6 +119,7 @@
     card.classList.add('selected');
     selectedTrack = track;
     addBtn.style.display = 'flex';
+    addBtn.disabled = !SPOTIFY_READY;
     addSuccess.classList.remove('show');
     addError.classList.remove('show');
   }
@@ -152,7 +162,7 @@
       addError.textContent = 'Netzwerkfehler.';
       addError.classList.add('show');
     } finally {
-      addBtn.disabled = false;
+      addBtn.disabled = !SPOTIFY_READY;
       addBtn.textContent = 'Zur Playlist hinzufügen';
     }
   });
@@ -168,7 +178,7 @@
       }
 
       queueList.innerHTML = '';
-      [...songs].reverse().forEach((song, i) => {
+      [...songs].reverse().forEach(song => {
         const item = document.createElement('div');
         item.className = 'queue-item';
         const attribution = song.session_name
@@ -184,6 +194,22 @@
             ${attribution}
           </div>
         `;
+        if (IS_ADMIN) {
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'queue-delete-btn';
+          deleteBtn.setAttribute('aria-label', 'Song löschen');
+          deleteBtn.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+          deleteBtn.addEventListener('click', async () => {
+            if (!confirm(`"${song.name}" löschen?`)) return;
+            try {
+              await fetch(`/api/admin/songs/${encodeURIComponent(song.id)}`, { method: 'DELETE' });
+              loadQueue();
+            } catch (e) {
+              console.error('Delete song error', e);
+            }
+          });
+          item.appendChild(deleteBtn);
+        }
         queueList.appendChild(item);
       });
     } catch {
