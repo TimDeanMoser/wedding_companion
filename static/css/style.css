@@ -157,19 +157,24 @@ body {
 /* ── Feedback messages ── */
 .feedback {
   border-radius: var(--radius);
-  padding: 14px 16px;
   font-size: 0.95rem;
   font-weight: 500;
+  overflow: hidden;
+  transition: opacity 0.25s ease, max-height 0.25s ease, padding 0.25s ease, margin 0.25s ease;
+}
+
+.feedback:not(.show) {
   opacity: 0;
   max-height: 0;
-  overflow: hidden;
-  transition: opacity 0.25s ease, max-height 0.25s ease;
+  padding: 0 !important;
+  margin: 0 !important;
   pointer-events: none;
 }
 
 .feedback.show {
   opacity: 1;
-  max-height: 100px;
+  max-height: 200px;
+  padding: 14px 16px;
   pointer-events: auto;
 }
 

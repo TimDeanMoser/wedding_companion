@@ -32,6 +32,7 @@ from database import (
     delete_all_songs,
     delete_all_uploads,
     delete_song,
+    delete_spotify_auth,
     delete_upload,
     get_like_counts,
     get_liked_by_session,
@@ -145,8 +146,7 @@ def welcome():
 
 @app.route("/")
 def index():
-    guest_url = request.host_url.rstrip("/") + url_for("welcome") + "?pw=" + GUEST_PASSWORD
-    return render_template("index.html", session_name=g.session_name, is_admin=g.is_admin, guest_url=guest_url)
+    return render_template("index.html", session_name=g.session_name, is_admin=g.is_admin)
 
 
 @app.route("/ablauf")
@@ -439,6 +439,15 @@ def admin_spotify_callback():
 # ---------------------------------------------------------------------------
 # Admin API
 # ---------------------------------------------------------------------------
+
+@app.route("/api/admin/spotify", methods=["DELETE"])
+def api_admin_spotify_disconnect():
+    err = _require_admin()
+    if err:
+        return err
+    delete_spotify_auth()
+    return jsonify({"ok": True})
+
 
 @app.route("/api/admin/songs", methods=["DELETE"])
 def api_admin_songs_delete_all():

@@ -36,6 +36,10 @@
 <script>
   // Auto-dismiss feedback messages after 3 seconds
   document.querySelectorAll('.feedback').forEach(el => {
+    // Dismiss any already-visible messages (server-rendered with .show)
+    if (el.classList.contains('show')) {
+      el._dismissTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
     new MutationObserver(() => {
       if (el.classList.contains('show')) {
         clearTimeout(el._dismissTimer);

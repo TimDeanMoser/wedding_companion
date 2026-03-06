@@ -268,6 +268,11 @@ def get_spotify_auth() -> sqlite3.Row | None:
         return con.execute("SELECT * FROM spotify_auth WHERE id = 1").fetchone()
 
 
+def delete_spotify_auth() -> None:
+    with _connect() as con:
+        con.execute("DELETE FROM spotify_auth WHERE id = 1")
+
+
 def save_spotify_auth(access_token: str, refresh_token: str, expires_at: float) -> None:
     with _connect() as con:
         con.execute(
