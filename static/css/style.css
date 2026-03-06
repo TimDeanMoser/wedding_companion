@@ -81,10 +81,27 @@ body {
   text-overflow: ellipsis;
 }
 
-/* spacer to balance the back button */
-.header-spacer {
+.header-qr-btn {
   width: 60px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.85;
+  transition: opacity var(--transition);
+}
+
+.header-qr-btn:active {
+  opacity: 0.6;
+}
+
+.header-qr-btn .material-symbols-outlined {
+  font-size: 1.4rem;
 }
 
 /* ── Main content ── */

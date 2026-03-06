@@ -139,50 +139,10 @@
   </div>
 </div>
 
-<!-- QR Code -->
-<div class="admin-section">
-  <h2 class="section-header">Einladungs-Link (QR)</h2>
-  <button class="btn btn-panel" id="showQrBtn">
-    <span class="material-symbols-outlined">qr_code</span>
-    QR-Code anzeigen
-  </button>
-</div>
-
-<!-- QR Modal -->
-<div class="lightbox" id="qrModal">
-  <button class="lightbox-close" id="qrModalClose">✕</button>
-  <div class="lightbox-content" style="align-items:center; gap:20px;">
-    <div style="color:#fff; font-size:1.1rem; font-weight:600;">Einladungs-Link scannen</div>
-    <canvas id="qrCanvas" style="border-radius:12px;"></canvas>
-    <div style="color:rgba(255,255,255,0.6); font-size:0.75rem; word-break:break-all; text-align:center; max-width:280px;">{{ guest_url }}</div>
-  </div>
-</div>
-
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script>
-  // QR modal
-  const showQrBtn = document.getElementById('showQrBtn');
-  const qrModal = document.getElementById('qrModal');
-  let qrRendered = false;
-  showQrBtn.addEventListener('click', () => {
-    if (!qrRendered) {
-      QRCode.toCanvas(document.getElementById('qrCanvas'), {{ guest_url | tojson }}, { width: 260, margin: 2 });
-      qrRendered = true;
-    }
-    qrModal.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  });
-  document.getElementById('qrModalClose').addEventListener('click', () => {
-    qrModal.classList.remove('open');
-    document.body.style.overflow = '';
-  });
-  qrModal.addEventListener('click', e => {
-    if (e.target === e.currentTarget) { qrModal.classList.remove('open'); document.body.style.overflow = ''; }
-  });
-
   // Spotify disconnect
   const spotifyDisconnectBtn = document.getElementById('spotifyDisconnectBtn');
   if (spotifyDisconnectBtn) {

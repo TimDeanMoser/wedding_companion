@@ -144,6 +144,12 @@ def welcome():
 # Pages
 # ---------------------------------------------------------------------------
 
+@app.context_processor
+def inject_guest_url():
+    guest_url = request.host_url.rstrip("/") + url_for("welcome") + "?pw=" + GUEST_PASSWORD
+    return {"guest_url": guest_url}
+
+
 @app.route("/")
 def index():
     return render_template("index.html", session_name=g.session_name, is_admin=g.is_admin)

@@ -3,7 +3,13 @@
 {% block title %}Wedding Companion{% endblock %}
 
 {% block header %}
-<header class="site-header"></header>
+<header class="site-header">
+  <span style="width:60px;flex-shrink:0;"></span>
+  <span class="header-title"></span>
+  <button class="header-qr-btn" id="headerQrBtn" aria-label="Einladungs-Link">
+    <span class="material-symbols-outlined">qr_code</span>
+  </button>
+</header>
 {% endblock %}
 
 {% block content %}
