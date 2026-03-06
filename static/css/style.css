@@ -262,6 +262,7 @@ body {
 
 .nav-btn .icon .material-symbols-outlined {
   font-size: 1.6rem;
+  color: var(--primary);
 }
 
 /* ── Timeline ── */
