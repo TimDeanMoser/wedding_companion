@@ -208,7 +208,14 @@ body {
 /* ── Home page ── */
 .home-hero {
   text-align: center;
-  padding: 32px 0 24px;
+  padding: 40px 0 28px;
+}
+
+.hero-heart {
+  width: 56px;
+  height: 56px;
+  display: block;
+  margin: 0 auto 14px;
 }
 
 .home-hero h1 {
@@ -283,17 +290,22 @@ body {
 
 .timeline-item {
   position: relative;
-  padding: 0 0 28px 20px;
-  transition: opacity var(--transition);
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  background: var(--panel);
+  border-radius: var(--radius);
+  border-left: 3px solid transparent;
+  transition: opacity var(--transition), border-color var(--transition);
 }
 
 .timeline-item::before {
   content: "";
   position: absolute;
-  left: -8px;
-  top: 6px;
-  width: 14px;
-  height: 14px;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--accent);
   border: 2px solid var(--bg);
@@ -301,12 +313,16 @@ body {
 }
 
 .timeline-item.past {
-  opacity: 0.4;
+  opacity: 0.45;
+}
+
+.timeline-item.active {
+  border-left-color: var(--primary);
 }
 
 .timeline-item.active::before {
   background: var(--primary);
-  box-shadow: 0 0 0 4px rgba(227, 106, 106, 0.25);
+  box-shadow: 0 0 0 3px rgba(227, 106, 106, 0.25);
 }
 
 .timeline-item.active .tl-label {
@@ -379,6 +395,7 @@ body {
 
 .upload-icon .material-symbols-outlined {
   font-size: 3rem;
+  color: var(--primary);
 }
 
 .upload-area p {
