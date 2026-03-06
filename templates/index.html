@@ -13,6 +13,10 @@
 </div>
 
 <nav class="nav-buttons">
+  <button class="nav-btn" id="qrBtn">
+    <span class="icon"><span class="material-symbols-outlined">qr_code</span></span>
+    Einladungs-Link (QR)
+  </button>
   <a href="/ablauf" class="nav-btn">
     <span class="icon"><span class="material-symbols-outlined">event_note</span></span>
     Ablauf
@@ -40,5 +44,42 @@
   </a>
   {% endif %}
 </nav>
+
+<!-- QR Modal -->
+<div class="lightbox" id="qrModal">
+  <button class="lightbox-close" id="qrModalClose">✕</button>
+  <div class="lightbox-content" style="align-items:center; gap:20px;">
+    <div style="color:#fff; font-size:1.1rem; font-weight:600;">Einladungs-Link scannen</div>
+    <canvas id="qrCanvas" style="border-radius:12px;"></canvas>
+    <div style="color:rgba(255,255,255,0.6); font-size:0.75rem; word-break:break-all; text-align:center; max-width:280px;">{{ guest_url }}</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script>
+  const qrBtn = document.getElementById('qrBtn');
+  const qrModal = document.getElementById('qrModal');
+  const qrModalClose = document.getElementById('qrModalClose');
+
+  let qrRendered = false;
+  qrBtn.addEventListener('click', () => {
+    if (!qrRendered) {
+      QRCode.toCanvas(document.getElementById('qrCanvas'), {{ guest_url | tojson }}, { width: 260, margin: 2 });
+      qrRendered = true;
+    }
+    qrModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  });
+
+  qrModalClose.addEventListener('click', closeQr);
+  qrModal.addEventListener('click', e => { if (e.target === e.currentTarget) closeQr(); });
+
+  function closeQr() {
+    qrModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+</script>
 {% endblock %}
 

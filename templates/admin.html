@@ -131,32 +131,10 @@
   </a>
 </div>
 
-<!-- QR Codes -->
-<div class="admin-section">
-  <h2 class="section-header">QR-Codes</h2>
-  <div class="qr-grid">
-    <div class="qr-card">
-      <div class="qr-label">Gäste</div>
-      <canvas id="qrGuest"></canvas>
-      <div class="qr-url">{{ guest_url }}</div>
-    </div>
-    <div class="qr-card">
-      <div class="qr-label">Admin</div>
-      <canvas id="qrAdmin"></canvas>
-      <div class="qr-url">{{ admin_url }}</div>
-    </div>
-  </div>
-</div>
-
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script>
-  // QR codes
-  QRCode.toCanvas(document.getElementById('qrGuest'), {{ guest_url | tojson }}, { width: 180, margin: 1 });
-  QRCode.toCanvas(document.getElementById('qrAdmin'), {{ admin_url | tojson }}, { width: 180, margin: 1 });
-
   // Delete single song
   async function deleteSong(id, name) {
     if (!confirm(`"${name}" löschen?`)) return;

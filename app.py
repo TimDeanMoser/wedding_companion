@@ -59,6 +59,8 @@ init_db()
 
 COOKIE_NAME = "wc_session"
 
+_spotify_pending_states: set[str] = set()
+
 # Routes that don't require a session
 _PUBLIC_PREFIXES = ("/welcome", "/static/", "/public/", "/api/", "/admin/spotify/callback")
 
@@ -143,7 +145,8 @@ def welcome():
 
 @app.route("/")
 def index():
-    return render_template("index.html", session_name=g.session_name, is_admin=g.is_admin)
+    guest_url = request.host_url.rstrip("/") + url_for("welcome") + "?pw=" + GUEST_PASSWORD
+    return render_template("index.html", session_name=g.session_name, is_admin=g.is_admin, guest_url=guest_url)
 
 
 @app.route("/ablauf")
@@ -245,7 +248,7 @@ def api_gallery():
         likes = like_counts.get(f.name, 0)
         uploaded_at_str = meta["uploaded_at"] if meta else None
         # For sorting: use uploaded_at string (ISO, sorts lexicographically) or mtime
-        sort_time = uploaded_at_str or f.stat().st_mtime
+        sort_time = uploaded_at_str or ""
         images.append({
             "url": url_for("serve_picture", filename=f.name),
             "name": f.name,
@@ -383,7 +386,7 @@ def admin_spotify_authorize():
     if not client_id or not redirect_uri:
         return "Spotify nicht konfiguriert (CLIENT_ID oder REDIRECT_URI fehlt).", 503
     state = secrets.token_urlsafe(16)
-    flask_session["spotify_state"] = state
+    _spotify_pending_states.add(state)
     params = {
         "client_id": client_id,
         "response_type": "code",
@@ -398,8 +401,9 @@ def admin_spotify_authorize():
 @app.route("/admin/spotify/callback")
 def admin_spotify_callback():
     state = request.args.get("state", "")
-    if state != flask_session.pop("spotify_state", None):
+    if state not in _spotify_pending_states:
         return "Ungültiger State.", 400
+    _spotify_pending_states.discard(state)
 
     code = request.args.get("code", "")
     if not code:
