@@ -7,6 +7,8 @@
   --text-muted: #9e8080;
   --radius: 14px;
   --transition: 0.18s ease;
+  --primary-glow: rgba(227, 106, 106, 0.12);
+  --primary-tint: rgba(227, 106, 106, 0.08);
 }
 
 .material-symbols-outlined {
@@ -270,6 +272,10 @@ body {
 .nav-btn .icon .material-symbols-outlined {
   font-size: 1.6rem;
   color: var(--primary);
+}
+
+.nav-btn-admin {
+  border: 2px solid var(--primary);
 }
 
 /* ── Timeline ── */
@@ -562,24 +568,21 @@ body {
 
 .track-card.selected {
   border-color: var(--primary);
-  background: rgba(227, 106, 106, 0.08);
+  background: var(--primary-tint);
 }
 
-.track-cover {
-  width: 56px;
-  height: 56px;
-  border-radius: 8px;
-  object-fit: cover;
-  flex-shrink: 0;
-  background: var(--accent);
-}
-
+.track-cover,
 .track-cover-placeholder {
   width: 56px;
   height: 56px;
   border-radius: 8px;
   background: var(--accent);
   flex-shrink: 0;
+}
+
+.track-cover { object-fit: cover; }
+
+.track-cover-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -591,20 +594,25 @@ body {
   min-width: 0;
 }
 
-.track-name {
-  font-weight: 600;
-  font-size: 0.95rem;
+/* Shared text truncation */
+.track-name,
+.track-artist,
+.queue-attribution,
+.admin-list-title,
+.admin-list-sub {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+.track-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
 .track-artist {
   font-size: 0.85rem;
   color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .queue-section {
@@ -856,9 +864,6 @@ body {
   font-size: 0.78rem;
   color: var(--text-muted);
   margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* ── Gallery items with like overlay ── */
@@ -926,7 +931,7 @@ body {
   color: #fff;
 }
 
-.like-btn.liked, .like-btn.liked.has-likes {
+.like-btn.liked {
   background: rgba(227,106,106,0.9);
   color: #fff;
 }
@@ -964,7 +969,8 @@ body {
   color: #fff;
 }
 
-.lightbox-like-btn .material-symbols-outlined {
+.lightbox-like-btn .material-symbols-outlined,
+.lightbox-delete-btn .material-symbols-outlined {
   font-size: 1.2rem;
 }
 
@@ -984,39 +990,7 @@ body {
   background: rgba(227,106,106,0.6);
 }
 
-.lightbox-delete-btn .material-symbols-outlined {
-  font-size: 1.2rem;
-}
-
-/* Queue delete button */
-.queue-delete-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 8px;
-  flex-shrink: 0;
-  transition: color var(--transition), background var(--transition);
-}
-
-.queue-delete-btn:active {
-  color: var(--primary);
-  background: rgba(227,106,106,0.12);
-}
-
-.queue-delete-btn .material-symbols-outlined {
-  font-size: 1.2rem;
-}
-
 /* ── Admin page ── */
-.nav-btn-admin {
-  border: 2px solid var(--primary);
-}
-
 .admin-stats {
   display: flex;
   gap: 10px;
@@ -1077,20 +1051,15 @@ body {
 .admin-list-title {
   font-size: 0.9rem;
   font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .admin-list-sub {
   font-size: 0.78rem;
   color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.admin-icon-btn {
+.admin-icon-btn,
+.queue-delete-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1104,13 +1073,15 @@ body {
   transition: color var(--transition), background var(--transition);
 }
 
-.admin-icon-btn.danger:active {
-  color: var(--primary);
-  background: rgba(227,106,106,0.12);
+.admin-icon-btn .material-symbols-outlined,
+.queue-delete-btn .material-symbols-outlined {
+  font-size: 1.2rem;
 }
 
-.admin-icon-btn .material-symbols-outlined {
-  font-size: 1.2rem;
+.admin-icon-btn.danger:active,
+.queue-delete-btn:active {
+  color: var(--primary);
+  background: var(--primary-glow);
 }
 
 .admin-badge {
@@ -1149,30 +1120,21 @@ body {
   margin-bottom: 8px;
 }
 
-.tl-time-input {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1.5px solid var(--accent);
-  background: var(--panel);
-  font-size: 0.95rem;
-  color: var(--text);
-  width: 110px;
-  flex-shrink: 0;
-}
-
+.tl-time-input,
 .tl-label-input {
-  flex: 1;
   padding: 10px 12px;
   border-radius: 10px;
   border: 1.5px solid var(--accent);
   background: var(--panel);
   font-size: 0.95rem;
   color: var(--text);
-  outline: none;
 }
 
-.tl-label-input:focus,
-.tl-time-input:focus {
+.tl-time-input { width: 110px; flex-shrink: 0; }
+.tl-label-input { flex: 1; outline: none; }
+
+.tl-time-input:focus,
+.tl-label-input:focus {
   border-color: var(--primary);
   outline: none;
 }
