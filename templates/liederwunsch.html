@@ -26,7 +26,7 @@
   <button class="search-btn" id="searchBtn">Suchen</button>
 </div>
 
-<div class="flex-col gap-8 mt-16" id="searchResults"></div>
+<div class="flex-col gap-8 mt-16" id="searchResults" style="display:none;"></div>
 
 <div class="feedback feedback-error mt-12" id="searchError"></div>
 
@@ -38,10 +38,9 @@
 <div class="feedback feedback-error mt-12" id="addError"></div>
 
 <div class="queue-section">
-  <h2 class="section-header">Zuletzt gewünscht</h2>
-  <div class="queue-list" id="queueList">
-    <div style="color: var(--text-muted); font-size: 0.9rem; padding: 8px 0;">Wird geladen…</div>
-  </div>
+  <h2 class="section-header" id="queueHeader" style="display:none;">Zuletzt gewünscht</h2>
+  <div class="queue-list" id="queueList" style="display:none;"></div>
+  <p class="queue-empty" id="queueEmpty" style="display:none;"></p>
 </div>
 {% endblock %}
 
@@ -61,6 +60,8 @@
   const addSuccess = document.getElementById('addSuccess');
   const addError = document.getElementById('addError');
   const queueList = document.getElementById('queueList');
+  const queueHeader = document.getElementById('queueHeader');
+  const queueEmpty = document.getElementById('queueEmpty');
 
   async function doSearch() {
     const q = searchInput.value.trim();
@@ -69,6 +70,7 @@
     searchBtn.disabled = true;
     searchBtn.textContent = '…';
     searchResults.innerHTML = '';
+    searchResults.style.display = 'none';
     searchError.classList.remove('show');
     addBtn.style.display = 'none';
     selectedTrack = null;
@@ -89,6 +91,7 @@
         return;
       }
 
+      searchResults.style.display = '';
       data.forEach(track => {
         const card = document.createElement('div');
         card.className = 'track-card';
@@ -173,10 +176,16 @@
       const songs = await resp.json();
 
       if (songs.length === 0) {
-        queueList.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; padding: 8px 0;">Noch keine Liederwünsche.</div>';
+        queueHeader.style.display = 'none';
+        queueList.style.display = 'none';
+        queueEmpty.textContent = 'Sei der Erste, der sich was wünscht!';
+        queueEmpty.style.display = 'block';
         return;
       }
 
+      queueHeader.style.display = '';
+      queueList.style.display = '';
+      queueEmpty.style.display = 'none';
       queueList.innerHTML = '';
       [...songs].reverse().forEach(song => {
         const item = document.createElement('div');
@@ -237,6 +246,7 @@
     searchInput.value = '';
     clearBtn.style.display = 'none';
     searchResults.innerHTML = '';
+    searchResults.style.display = 'none';
     searchError.classList.remove('show');
     addBtn.style.display = 'none';
     selectedTrack = null;

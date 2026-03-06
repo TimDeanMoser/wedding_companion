@@ -619,6 +619,12 @@ body {
   margin-top: 28px;
 }
 
+.queue-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 4px 0;
+}
+
 .section-header {
   font-size: 0.95rem;
   font-weight: 600;
