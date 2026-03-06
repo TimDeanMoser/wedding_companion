@@ -5,15 +5,18 @@
 
 {% block content %}
 <div class="search-row">
-  <input
-    type="text"
-    class="search-input"
-    id="searchInput"
-    placeholder="Song oder Künstler suchen…"
-    autocomplete="off"
-    autocorrect="off"
-    spellcheck="false"
-  >
+  <div class="search-input-wrap">
+    <input
+      type="text"
+      class="search-input"
+      id="searchInput"
+      placeholder="Song oder Künstler suchen…"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+    >
+    <button class="search-clear" id="clearBtn" style="display:none;" aria-label="Suche löschen">✕</button>
+  </div>
   <button class="search-btn" id="searchBtn">Suchen</button>
 </div>
 
@@ -29,12 +32,10 @@
 <div class="feedback feedback-error mt-12" id="addError"></div>
 
 <div class="queue-section">
-  <details id="queueDetails">
-    <summary>Aktuelle Playlist</summary>
-    <div class="queue-list" id="queueList">
-      <div style="color: var(--text-muted); font-size: 0.9rem; padding: 8px 0;">Wird geladen…</div>
-    </div>
-  </details>
+  <h2 class="section-header">Zuletzt gewünscht</h2>
+  <div class="queue-list" id="queueList">
+    <div style="color: var(--text-muted); font-size: 0.9rem; padding: 8px 0;">Wird geladen…</div>
+  </div>
 </div>
 {% endblock %}
 
@@ -44,6 +45,7 @@
 
   const searchInput = document.getElementById('searchInput');
   const searchBtn = document.getElementById('searchBtn');
+  const clearBtn = document.getElementById('clearBtn');
   const searchResults = document.getElementById('searchResults');
   const searchError = document.getElementById('searchError');
   const addBtn = document.getElementById('addBtn');
@@ -85,7 +87,7 @@
         card.innerHTML = `
           ${track.cover
             ? `<img class="track-cover" src="${track.cover}" alt="${escHtml(track.name)}">`
-            : `<div class="track-cover-placeholder">🎵</div>`}
+            : `<div class="track-cover-placeholder"><span class="material-symbols-outlined">music_note</span></div>`}
           <div class="track-info">
             <div class="track-name">${escHtml(track.name)}</div>
             <div class="track-artist">${escHtml(track.artist)}</div>
@@ -137,11 +139,11 @@
         addSuccess.classList.add('show');
         addBtn.style.display = 'none';
         selectedTrack = null;
-        document.querySelectorAll('.track-card').forEach(c => c.classList.remove('selected'));
+        clearSearch();
         loadQueue();
-
-        const details = document.getElementById('queueDetails');
-        details.open = true;
+      } else if (data.rate_limited) {
+        addError.textContent = data.error || 'Du hast zu viele Songs gewünscht. Bitte warte noch etwas.';
+        addError.classList.add('show');
       } else {
         addError.textContent = data.error || 'Fehler beim Hinzufügen.';
         addError.classList.add('show');
@@ -166,23 +168,34 @@
       }
 
       queueList.innerHTML = '';
-      songs.forEach((song, i) => {
+      [...songs].reverse().forEach((song, i) => {
         const item = document.createElement('div');
         item.className = 'queue-item';
+        const attribution = song.session_name
+          ? `<div class="queue-attribution">gewünscht von ${escHtml(song.session_name)}${song.added_at ? ' · ' + formatQueueTime(song.added_at) : ''}</div>`
+          : '';
         item.innerHTML = `
-          <span class="queue-num">${i + 1}</span>
           ${song.cover
-            ? `<img src="${song.cover}" alt="${escHtml(song.name)}" style="width:44px;height:44px;border-radius:6px;object-fit:cover;">`
-            : `<div class="track-cover-placeholder" style="width:44px;height:44px;font-size:1.1rem;">🎵</div>`}
+            ? `<img src="${song.cover}" alt="" style="width:44px;height:44px;border-radius:6px;object-fit:cover;">`
+            : `<div class="track-cover-placeholder" style="width:44px;height:44px;"><span class="material-symbols-outlined" aria-hidden="true">music_note</span></div>`}
           <div class="track-info">
             <div class="track-name">${escHtml(song.name)}</div>
             <div class="track-artist">${escHtml(song.artist)}</div>
+            ${attribution}
           </div>
         `;
         queueList.appendChild(item);
       });
     } catch {
       queueList.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem;">Fehler beim Laden.</div>';
+    }
+  }
+
+  function formatQueueTime(isoStr) {
+    try {
+      return new Date(isoStr).toLocaleTimeString('de-CH', { timeStyle: 'short' });
+    } catch {
+      return '';
     }
   }
 
@@ -194,9 +207,26 @@
       .replace(/"/g, '&quot;');
   }
 
+  function clearSearch() {
+    searchInput.value = '';
+    clearBtn.style.display = 'none';
+    searchResults.innerHTML = '';
+    searchError.classList.remove('show');
+    addBtn.style.display = 'none';
+    selectedTrack = null;
+    searchInput.focus();
+  }
+
+  searchInput.addEventListener('input', () => {
+    clearBtn.style.display = searchInput.value ? 'flex' : 'none';
+  });
+
+  clearBtn.addEventListener('click', clearSearch);
+
   searchBtn.addEventListener('click', doSearch);
   searchInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') doSearch();
+    if (e.key === 'Escape') clearSearch();
   });
 
   loadQueue();

@@ -3,37 +3,36 @@
 {% block title %}Wedding Companion{% endblock %}
 
 {% block header %}
-<header class="site-header" style="justify-content: center;">
-  <span class="header-title" style="text-align:center; font-size:1.1rem;">Wedding Companion</span>
-</header>
+<header class="site-header"></header>
 {% endblock %}
 
 {% block content %}
 <div class="home-hero">
   <h1>Wedding Companion</h1>
-  <p>Schön, dass du dabei bist! 🎉</p>
+  <p>Hallo, {{ session_name }}!</p>
 </div>
 
 <nav class="nav-buttons">
   <a href="/ablauf" class="nav-btn">
-    <span class="icon">📋</span>
+    <span class="icon"><span class="material-symbols-outlined">event_note</span></span>
     Ablauf
   </a>
   <a href="/fotos" class="nav-btn">
-    <span class="icon">📷</span>
+    <span class="icon"><span class="material-symbols-outlined">photo_camera</span></span>
     Fotos Hochladen
   </a>
   <a href="/galerie" class="nav-btn">
-    <span class="icon">🖼️</span>
+    <span class="icon"><span class="material-symbols-outlined">photo_library</span></span>
     Live Galerie
   </a>
   <a href="/liederwunsch" class="nav-btn">
-    <span class="icon">🎵</span>
+    <span class="icon"><span class="material-symbols-outlined">music_note</span></span>
     Liederwunsch
   </a>
   <a href="/zustupf" class="nav-btn">
-    <span class="icon">💝</span>
+    <span class="icon"><span class="material-symbols-outlined">volunteer_activism</span></span>
     Zustupf
   </a>
 </nav>
 {% endblock %}
+
