@@ -690,7 +690,7 @@ body {
   flex-shrink: 0;
 }
 
-.track-cover { object-fit: cover; }
+.track-cover { object-fit: cover; transition: opacity 0.3s ease; }
 
 .track-cover-placeholder {
   display: flex;
@@ -798,6 +798,9 @@ body {
   height: 44px;
   border-radius: 6px;
 }
+
+.queue-item img { transition: opacity 0.3s ease; background: var(--accent); }
+.now-playing-card img { transition: opacity 0.3s ease; background: var(--accent); border-radius: 6px; }
 
 /* ── Zustupf ── */
 .zustupf-section {

@@ -387,6 +387,7 @@ def api_spotify_search():
             "name": t["name"],
             "artist": ", ".join(a["name"] for a in t["artists"]),
             "cover": t["album"]["images"][0]["url"] if t["album"]["images"] else None,
+            "cover_small": t["album"]["images"][-1]["url"] if t["album"]["images"] else None,
             "album": t["album"]["name"],
         }
         for t in items
@@ -419,6 +420,7 @@ def api_spotify_now_playing():
             "name": item.get("name", ""),
             "artist": ", ".join(a["name"] for a in item.get("artists", [])),
             "cover": images[0]["url"] if images else None,
+            "cover_small": images[-1]["url"] if images else None,
         })
     except Exception:
         return jsonify({"playing": False})

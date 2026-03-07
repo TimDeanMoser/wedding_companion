@@ -108,15 +108,28 @@
         const card = document.createElement('div');
         card.className = 'track-card';
         card.dataset.id = track.id;
-        card.innerHTML = `
-          ${track.cover
-            ? `<img class="track-cover" src="${track.cover}" alt="${escHtml(track.name)}">`
-            : `<div class="track-cover-placeholder"><span class="material-symbols-outlined">music_note</span></div>`}
-          <div class="track-info">
-            <div class="track-name">${escHtml(track.name)}</div>
-            <div class="track-artist">${escHtml(track.artist)}</div>
-          </div>
-        `;
+
+        if (track.cover_small || track.cover) {
+          const coverImg = document.createElement('img');
+          coverImg.className = 'track-cover';
+          coverImg.alt = '';
+          coverImg.style.opacity = '0';
+          coverImg.src = track.cover_small || track.cover;
+          coverImg.addEventListener('load', () => { coverImg.style.opacity = '1'; });
+          coverImg.addEventListener('error', () => { coverImg.style.opacity = '1'; });
+          card.appendChild(coverImg);
+        } else {
+          const ph = document.createElement('div');
+          ph.className = 'track-cover-placeholder';
+          ph.innerHTML = '<span class="material-symbols-outlined">music_note</span>';
+          card.appendChild(ph);
+        }
+
+        const info = document.createElement('div');
+        info.className = 'track-info';
+        info.innerHTML = `<div class="track-name">${escHtml(track.name)}</div><div class="track-artist">${escHtml(track.artist)}</div>`;
+        card.appendChild(info);
+
         card.addEventListener('click', () => selectTrack(card, track));
         searchResults.appendChild(card);
       });
@@ -211,7 +224,7 @@
           : '';
         item.innerHTML = `
           ${song.cover
-            ? `<img src="${song.cover}" alt="" style="width:44px;height:44px;border-radius:6px;object-fit:cover;">`
+            ? `<img src="${song.cover}" alt="" style="width:44px;height:44px;border-radius:6px;object-fit:cover;opacity:0;">`
             : `<div class="track-cover-placeholder" style="width:44px;height:44px;"><span class="material-symbols-outlined" aria-hidden="true">music_note</span></div>`}
           <div class="track-info">
             <div class="track-name">${escHtml(song.name)}</div>
@@ -219,6 +232,11 @@
             ${attribution}
           </div>
         `;
+        const qImg = item.querySelector('img');
+        if (qImg) {
+          qImg.addEventListener('load', () => { qImg.style.opacity = '1'; });
+          qImg.addEventListener('error', () => { qImg.style.opacity = '1'; });
+        }
         if (IS_ADMIN) {
           const deleteBtn = document.createElement('button');
           deleteBtn.className = 'queue-delete-btn';
@@ -292,15 +310,21 @@
         section.style.display = 'none';
         return;
       }
+      const coverSrc = data.cover_small || data.cover;
       card.innerHTML = `
-        ${data.cover
-          ? `<img src="${data.cover}" alt="" style="width:44px;height:44px;border-radius:6px;object-fit:cover;flex-shrink:0;">`
+        ${coverSrc
+          ? `<img src="${coverSrc}" alt="" style="width:44px;height:44px;border-radius:6px;object-fit:cover;flex-shrink:0;opacity:0;">`
           : `<div class="track-cover-placeholder" style="width:44px;height:44px;flex-shrink:0;"><span class="material-symbols-outlined" aria-hidden="true">music_note</span></div>`}
         <div class="track-info">
           <div class="track-name">${escHtml(data.name)}</div>
           <div class="track-artist">${escHtml(data.artist)}</div>
         </div>
       `;
+      const npImg = card.querySelector('img');
+      if (npImg) {
+        npImg.addEventListener('load', () => { npImg.style.opacity = '1'; });
+        npImg.addEventListener('error', () => { npImg.style.opacity = '1'; });
+      }
       section.style.display = '';
     } catch {
       section.style.display = 'none';
