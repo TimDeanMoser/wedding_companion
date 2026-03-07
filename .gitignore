@@ -1,8 +1,11 @@
 .env
+.claude
 .venv/
 __pycache__/
 *.pyc
 *.pyo
+*.db
+data/*
+!data/.gitkeep
 public/pictures/*
 !public/pictures/.gitkeep
-data/songs.json

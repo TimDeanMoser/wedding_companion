@@ -3,9 +3,7 @@
 {% block title %}Wedding Companion{% endblock %}
 
 {% block header %}
-<header class="site-header">
-  <span style="width:60px;flex-shrink:0;"></span>
-  <span class="header-title"></span>
+<header class="site-header site-header--home">
   <button class="header-qr-btn" id="headerQrBtn" aria-label="Einladungs-Link">
     <span class="material-symbols-outlined">qr_code</span>
   </button>
@@ -17,7 +15,7 @@
   <svg class="hero-heart" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path fill="var(--primary)" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
   </svg>
-  <h1>Hallo, {{ session_name }}!</h1>
+  <h1 id="homeGreeting">Hallo, {{ session_name }}!</h1>
   <p>Schön, dass du da bist</p>
 </div>
 
@@ -52,3 +50,17 @@
 
 {% endblock %}
 
+{% block scripts %}
+<script>
+  const _n = {{ session_name | tojson }};
+  const _ns = _n.length > 16 ? _n.slice(0, 15) + '…' : _n;
+  const _g = [
+    `Grüezi ${_ns}!`, `Hoi ${_ns}!`, `Hallo ${_ns}!`, `Willkommen ${_ns}!`,
+    `Wieh gaht's ${_ns}?`, `Was geeht ${_ns}?`, `Was lauft so ${_ns}?`,
+    `Welcome ${_ns}!`, `Guete Tag ${_ns}!`, `Hi ${_ns}!`, `Hey ${_ns}!`,
+    `Servus ${_ns}!`, `Alles klar ${_ns}?`, `Sali ${_ns}!`, `Saletti ${_ns}!`,
+    `Salut ${_ns}!`, `Guete Bonjour ${_ns}!`
+  ];
+  document.getElementById('homeGreeting').textContent = _g[Math.floor(Math.random() * _g.length)];
+</script>
+{% endblock %}

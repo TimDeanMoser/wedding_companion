@@ -106,6 +106,14 @@ def list_sessions() -> list[dict]:
     return [dict(r) for r in rows]
 
 
+def delete_session(session_id: str) -> None:
+    with _connect() as con:
+        con.execute("DELETE FROM likes WHERE session_id = ?", (session_id,))
+        con.execute("DELETE FROM songs WHERE session_id = ?", (session_id,))
+        con.execute("DELETE FROM uploads WHERE session_id = ?", (session_id,))
+        con.execute("DELETE FROM sessions WHERE id = ?", (session_id,))
+
+
 # ---------------------------------------------------------------------------
 # Uploads
 # ---------------------------------------------------------------------------

@@ -31,6 +31,7 @@ from database import (
     create_session,
     delete_all_songs,
     delete_all_uploads,
+    delete_session,
     delete_song,
     delete_spotify_auth,
     delete_upload,
@@ -54,7 +55,7 @@ load_dotenv()
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-secret")
-app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024  # 20 MB
+app.config["MAX_CONTENT_LENGTH"] = 30 * 1024 * 1024  # 30 MB
 
 init_db()
 
@@ -146,6 +147,8 @@ def welcome():
 
 @app.context_processor
 def inject_guest_url():
+    if not getattr(g, "session_id", None):
+        return {"guest_url": ""}
     guest_url = request.host_url.rstrip("/") + url_for("welcome") + "?pw=" + GUEST_PASSWORD
     return {"guest_url": guest_url}
 
@@ -157,7 +160,7 @@ def index():
 
 @app.route("/ablauf")
 def ablauf():
-    events = load_timeline()
+    events = sorted(load_timeline(), key=lambda e: e["time"])
     return render_template("ablauf.html", events=events, wedding_date=WEDDING_DATE, is_admin=g.is_admin)
 
 
@@ -180,7 +183,9 @@ def liederwunsch():
 @app.route("/zustupf")
 def zustupf():
     iban = os.environ.get("WEDDING_IBAN", "")
-    return render_template("zustupf.html", iban=iban)
+    phone = os.environ.get("WEDDING_PHONE", "")
+    twint_url = os.environ.get("WEDDING_TWINT_URL", "")
+    return render_template("zustupf.html", iban=iban, phone=phone, twint_url=twint_url)
 
 
 @app.route("/admin")
@@ -204,6 +209,7 @@ def admin():
         events=events,
         guest_url=guest_url,
         admin_url=admin_url,
+        current_session_id=g.session_id,
     )
 
 
@@ -519,11 +525,14 @@ def api_admin_timeline():
     events = request.get_json(force=True, silent=True) or []
     if not isinstance(events, list):
         return jsonify({"ok": False, "error": "Ungültige Daten."}), 400
-    cleaned = [
-        {"time": str(e.get("time", "")).strip(), "label": str(e.get("label", "")).strip()}
-        for e in events
-        if e.get("time") and e.get("label")
-    ]
+    cleaned = sorted(
+        [
+            {"time": str(e.get("time", "")).strip(), "label": str(e.get("label", "")).strip()}
+            for e in events
+            if e.get("time") and e.get("label")
+        ],
+        key=lambda e: e["time"],
+    )
     save_timeline(cleaned)
     return jsonify({"ok": True})
 
@@ -536,13 +545,25 @@ def api_admin_users():
     return jsonify(list_sessions())
 
 
+@app.route("/api/admin/users/<session_id>", methods=["DELETE"])
+def api_admin_users_delete(session_id: str):
+    err = _require_admin()
+    if err:
+        return err
+    # Prevent self-deletion
+    if session_id == request.cookies.get(COOKIE_NAME):
+        return jsonify({"ok": False, "error": "Du kannst dich nicht selbst löschen."}), 400
+    delete_session(session_id)
+    return jsonify({"ok": True})
+
+
 # ---------------------------------------------------------------------------
 # Error handlers
 # ---------------------------------------------------------------------------
 
 @app.errorhandler(413)
 def too_large(_):
-    return jsonify({"ok": False, "error": "Datei zu gross. Maximum: 20 MB."}), 413
+    return jsonify({"ok": False, "error": "Datei zu gross. Maximum: 30 MB."}), 413
 
 
 if __name__ == "__main__":

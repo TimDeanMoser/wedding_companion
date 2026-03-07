@@ -1,7 +1,13 @@
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "heic", "webp", "gif"}
 
-GUEST_PASSWORD = "Gipfeli2026"
-ADMIN_PASSWORD = "GigaGipfeli2026"
+GUEST_PASSWORD = os.environ.get("WEDDING_GUEST_PASSWORD", "")
+ADMIN_PASSWORD = os.environ.get("WEDDING_ADMIN_PASSWORD", "")
 
 WEDDING_DATE = "2026-04-25"
 

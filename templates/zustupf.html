@@ -14,9 +14,10 @@
     <span class="material-symbols-outlined payment-card-icon" aria-hidden="true">payments</span>
     <span class="payment-card-title">Twint</span>
   </div>
-  <p class="payment-card-desc">Einfach &amp; schnell bezahlen</p>
+  {% if phone %}<div class="iban-display">{{ phone }}</div>{% endif %}
+  {% if twint_url %}
   <a
-    href="https://go.twint.ch/1/e/tw?tw=acq.o7zuwsHWReSGv8MoH8FXxvGOwJn717XFdNxbgv3eepWBcIPbZWYZ0W5a_L9axNcI."
+    href="{{ twint_url }}"
     target="_blank"
     rel="noopener noreferrer"
     class="btn btn-primary"
@@ -24,6 +25,7 @@
     <span class="material-symbols-outlined" aria-hidden="true">payments</span>
     Mit Twint bezahlen
   </a>
+  {% endif %}
 </div>
 
 {% if iban %}
@@ -33,7 +35,7 @@
     <span class="payment-card-title">Banküberweisung</span>
   </div>
   <div class="iban-display" id="ibanDisplay">{{ iban }}</div>
-  <button class="btn btn-accent" id="copyBtn">
+  <button class="btn btn-primary" id="copyBtn">
     <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
     IBAN kopieren
   </button>

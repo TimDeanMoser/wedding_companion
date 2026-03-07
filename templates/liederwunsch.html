@@ -5,7 +5,7 @@
 
 {% block content %}
 {% if not spotify_ready %}
-<div class="feedback feedback-error show" style="margin-bottom:16px;">
+<div class="feedback-error" style="border-radius:var(--radius);padding:14px 16px;font-size:0.95rem;font-weight:500;margin-bottom:16px;">
   Spotify nicht verbunden – bitte Tim fragen!
 </div>
 {% endif %}
@@ -20,10 +20,13 @@
       autocomplete="off"
       autocorrect="off"
       spellcheck="false"
+      {% if not spotify_ready %}disabled{% endif %}
     >
     <button class="search-clear" id="clearBtn" style="display:none;" aria-label="Suche löschen">✕</button>
   </div>
-  <button class="search-btn" id="searchBtn">Suchen</button>
+  <button class="search-btn" id="searchBtn" aria-label="Suchen" {% if not spotify_ready %}disabled{% endif %}>
+    <span class="material-symbols-outlined">search</span>
+  </button>
 </div>
 
 <div class="flex-col gap-8 mt-16" id="searchResults" style="display:none;"></div>
@@ -64,11 +67,12 @@
   const queueEmpty = document.getElementById('queueEmpty');
 
   async function doSearch() {
+    if (!SPOTIFY_READY) return;
     const q = searchInput.value.trim();
     if (!q) return;
 
     searchBtn.disabled = true;
-    searchBtn.textContent = '…';
+    searchBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span>';
     searchResults.innerHTML = '';
     searchResults.style.display = 'none';
     searchError.classList.remove('show');
@@ -113,7 +117,7 @@
       searchError.classList.add('show');
     } finally {
       searchBtn.disabled = false;
-      searchBtn.textContent = 'Suchen';
+      searchBtn.innerHTML = '<span class="material-symbols-outlined">search</span>';
     }
   }
 
@@ -178,8 +182,12 @@
       if (songs.length === 0) {
         queueHeader.style.display = 'none';
         queueList.style.display = 'none';
-        queueEmpty.textContent = 'Sei der Erste, der sich was wünscht!';
-        queueEmpty.style.display = 'block';
+        if (SPOTIFY_READY) {
+          queueEmpty.textContent = 'Sei der Erste, der sich was wünscht!';
+          queueEmpty.style.display = 'block';
+        } else {
+          queueEmpty.style.display = 'none';
+        }
         return;
       }
 
@@ -191,7 +199,7 @@
         const item = document.createElement('div');
         item.className = 'queue-item';
         const attribution = song.session_name
-          ? `<div class="queue-attribution">gewünscht von ${escHtml(song.session_name)}${song.added_at ? ' · ' + formatQueueTime(song.added_at) : ''}</div>`
+          ? `<div class="queue-attribution">${escHtml(song.session_name)}${song.added_at ? ' · ' + formatQueueTime(song.added_at) : ''}</div>`
           : '';
         item.innerHTML = `
           ${song.cover

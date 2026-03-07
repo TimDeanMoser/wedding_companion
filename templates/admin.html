@@ -24,24 +24,7 @@
 <!-- Songs -->
 <div class="admin-section">
   <h2 class="section-header">Songs</h2>
-  {% if songs %}
-  <div class="admin-list" id="songsList">
-    {% for song in songs | reverse %}
-    <div class="admin-list-item" id="song-{{ song.id }}">
-      <div class="admin-list-info">
-        <div class="admin-list-title">{{ song.name }}</div>
-        <div class="admin-list-sub">{{ song.artist }}{% if song.session_name %} · {{ song.session_name }}{% endif %}</div>
-      </div>
-      <button class="admin-icon-btn danger" onclick="deleteSong('{{ song.id }}', '{{ song.name | replace("'", "\\'") }}')" aria-label="Song löschen">
-        <span class="material-symbols-outlined">delete</span>
-      </button>
-    </div>
-    {% endfor %}
-  </div>
-  {% else %}
-  <p class="admin-empty">Keine Songs.</p>
-  {% endif %}
-  <button class="btn btn-outline mt-12" id="clearSongsBtn">
+  <button class="btn btn-outline" id="clearSongsBtn">
     <span class="material-symbols-outlined">delete_sweep</span>
     Alle Songs löschen
   </button>
@@ -66,13 +49,18 @@
 <div class="admin-section">
   <h2 class="section-header">Benutzer</h2>
   {% if users %}
-  <div class="admin-list">
+  <div class="admin-list" id="userList">
     {% for u in users %}
-    <div class="admin-list-item">
+    <div class="admin-list-item" id="user-{{ u.id }}">
       <div class="admin-list-info">
-        <div class="admin-list-title">{{ u.name }}{% if u.is_admin %} <span class="admin-badge">Admin</span>{% endif %}</div>
+        <div class="admin-list-title">{{ u.name }}{% if u.is_admin %} <span class="admin-badge">Admin</span>{% endif %}{% if u.id == current_session_id %} <span class="admin-badge" style="background:var(--accent);color:var(--text);">Du</span>{% endif %}</div>
         <div class="admin-list-sub">{{ u.created_at[:16] | replace('T', ' ') }}</div>
       </div>
+      {% if u.id != current_session_id %}
+      <button class="admin-icon-btn danger" onclick="deleteUser('{{ u.id }}', '{{ u.name }}')" aria-label="Benutzer löschen">
+        <span class="material-symbols-outlined">person_remove</span>
+      </button>
+      {% endif %}
     </div>
     {% endfor %}
   </div>
@@ -143,6 +131,20 @@
 
 {% block scripts %}
 <script>
+  // Delete user
+  async function deleteUser(id, name) {
+    if (!confirm(`"${name}" löschen? Ihre Songs und Likes werden entfernt.`)) return;
+    try {
+      const resp = await fetch(`/api/admin/users/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      const data = await resp.json();
+      if (data.ok) {
+        document.getElementById(`user-${id}`)?.remove();
+      }
+    } catch (e) {
+      console.error('Delete user error', e);
+    }
+  }
+
   // Spotify disconnect
   const spotifyDisconnectBtn = document.getElementById('spotifyDisconnectBtn');
   if (spotifyDisconnectBtn) {
@@ -157,30 +159,11 @@
     });
   }
 
-  // Delete single song
-  async function deleteSong(id, name) {
-    if (!confirm(`"${name}" löschen?`)) return;
-    try {
-      const resp = await fetch(`/api/admin/songs/${encodeURIComponent(id)}`, { method: 'DELETE' });
-      const data = await resp.json();
-      if (data.ok) {
-        document.getElementById(`song-${id}`)?.remove();
-      }
-    } catch (e) {
-      console.error('Delete song error', e);
-    }
-  }
-
   // Clear all songs
   document.getElementById('clearSongsBtn').addEventListener('click', async () => {
     if (!confirm('Alle Songs löschen?')) return;
     try {
-      const resp = await fetch('/api/admin/songs', { method: 'DELETE' });
-      const data = await resp.json();
-      if (data.ok) {
-        document.getElementById('songsList')?.remove();
-        document.getElementById('clearSongsBtn').insertAdjacentHTML('beforebegin', '<p class="admin-empty">Keine Songs.</p>');
-      }
+      await fetch('/api/admin/songs', { method: 'DELETE' });
     } catch (e) {
       console.error('Clear songs error', e);
     }
@@ -232,6 +215,11 @@
       });
       const data = await resp.json();
       if (data.ok) {
+        // Re-sort rows by time in the DOM
+        const editor = document.getElementById('timelineEditor');
+        const rows = Array.from(editor.querySelectorAll('.timeline-row'));
+        rows.sort((a, b) => a.querySelector('.tl-time-input').value.localeCompare(b.querySelector('.tl-time-input').value));
+        rows.forEach(r => editor.appendChild(r));
         success.textContent = '✓ Ablauf gespeichert!';
         success.classList.add('show');
       } else {
