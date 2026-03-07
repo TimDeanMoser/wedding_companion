@@ -8,7 +8,7 @@ deploy:
 	git push
 	ssh $(SERVER) "cd $(APP_DIR) \
 		&& git pull \
-		&& uv sync \
+		&& ~/.local/bin/uv sync \
 		&& systemctl restart wedding \
 		&& systemctl status wedding --no-pager -l"
 
