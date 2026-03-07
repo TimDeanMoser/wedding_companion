@@ -1,3 +1,10 @@
+/* Suppress Safari auto-detected links (phone numbers, IBANs, dates, etc.) */
+a[x-apple-data-detectors] {
+  color: inherit !important;
+  text-decoration: none !important;
+  pointer-events: none;
+}
+
 :root {
   --bg: #ffffff;
   --panel: #F8DFDB;
@@ -10,6 +17,23 @@
   --primary-glow: rgba(252, 34, 28, 0.12);
   --primary-tint: rgba(252, 34, 28, 0.08);
 }
+
+html.dark {
+  --bg: #1A0C0C;
+  --panel: #2C1414;
+  --accent: #4A1E1E;
+  --primary: #FC221C;
+  --text: #FFE9E8;
+  --text-muted: #A87570;
+  --primary-glow: rgba(252, 34, 28, 0.22);
+  --primary-tint: rgba(252, 34, 28, 0.15);
+  color-scheme: dark;
+}
+
+html.dark .app-wrapper { background: var(--bg); }
+html.dark .site-header { background: var(--bg); border-color: var(--accent); }
+html.dark .iban-display { background: var(--panel); }
+html.dark .lightbox { background: var(--bg); }
 
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -68,8 +92,30 @@ body {
 .site-header--home {
   background: transparent;
   border-bottom: none;
-  justify-content: flex-end;
+  justify-content: space-between;
+  padding-left: 6px;
 }
+
+/* ── Dark mode toggle ── */
+.dark-toggle {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  border: none;
+  border-radius: 50%;
+  color: var(--primary);
+  cursor: pointer;
+  padding: 0;
+  transition: opacity var(--transition), background var(--transition);
+}
+
+.dark-toggle:active { opacity: 0.6; }
+
+.dark-toggle .material-symbols-outlined { font-size: 1.3rem; }
 
 .back-btn {
   display: flex;
@@ -236,7 +282,7 @@ body {
 /* ── Home page ── */
 .home-hero {
   text-align: center;
-  padding: 40px 0 28px;
+  padding: 30px 0 28px;
 }
 
 .hero-heart {

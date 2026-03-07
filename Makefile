@@ -1,7 +1,7 @@
-SERVER ?= root@YOUR_DROPLET_IP
+SERVER ?= root@wedding_companion
 APP_DIR = /srv/wedding
 
-.PHONY: deploy logs backup ssh
+.PHONY: deploy push-env logs backup ssh
 
 # Push local commits, pull on server, sync deps if needed, restart
 deploy:
@@ -11,6 +11,11 @@ deploy:
 		&& uv sync \
 		&& systemctl restart wedding \
 		&& systemctl status wedding --no-pager -l"
+
+# Upload local .env to server and restart
+push-env:
+	scp .env $(SERVER):$(APP_DIR)/.env
+	ssh $(SERVER) "systemctl restart wedding"
 
 # Stream live logs from the server
 logs:
