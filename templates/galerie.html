@@ -109,6 +109,10 @@
       el.src = img.url;
       el.alt = '';
       el.loading = 'lazy';
+      el.style.opacity = '0';
+      wrapper.classList.add('loading');
+      el.addEventListener('load', () => { wrapper.classList.remove('loading'); el.style.opacity = '1'; });
+      el.addEventListener('error', () => { wrapper.classList.remove('loading'); el.style.opacity = '1'; });
       wrapper.appendChild(el);
 
       if (img.uploader) {

@@ -122,7 +122,7 @@ body {
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
-  padding: 8px 0;
+  padding: 4px 0;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -760,6 +760,38 @@ body {
   background: var(--panel);
 }
 
+/* ── Now Playing card ── */
+.now-playing-section {
+  margin-top: 16px;
+  margin-bottom: 4px;
+}
+
+.now-playing-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.now-playing-label .material-symbols-outlined {
+  font-size: 1rem;
+}
+
+.now-playing-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 2px solid var(--accent);
+}
+
 .queue-item img,
 .queue-item .track-cover-placeholder {
   width: 44px;
@@ -991,6 +1023,11 @@ body {
 }
 
 /* ── Gallery items with like overlay ── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 .gallery-item {
   position: relative;
   border-radius: 10px;
@@ -998,12 +1035,18 @@ body {
   cursor: pointer;
 }
 
+.gallery-item.loading {
+  background: linear-gradient(90deg, var(--panel) 25%, var(--accent) 50%, var(--panel) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
 .gallery-item img {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
   display: block;
-  transition: filter var(--transition);
+  transition: opacity 0.3s ease, filter var(--transition);
 }
 
 .gallery-item:active img {

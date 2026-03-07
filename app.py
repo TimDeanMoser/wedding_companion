@@ -1,6 +1,7 @@
 import base64
 import io
 import os
+import re
 import secrets
 import time
 import urllib.parse
@@ -62,6 +63,12 @@ init_db()
 COOKIE_NAME = "wc_session"
 
 _spotify_pending_states: set[str] = set()
+
+
+def _sanitize_name(name: str) -> str:
+    name = name.lower()
+    name = re.sub(r"[^a-z0-9]+", "_", name)
+    return name.strip("_")[:20]
 
 # Routes that don't require a session
 _PUBLIC_PREFIXES = ("/welcome", "/static/", "/public/", "/api/", "/admin/spotify/callback")
@@ -230,8 +237,10 @@ def fotos_upload():
         return jsonify({"ok": False, "error": "Dateityp nicht erlaubt. Erlaubt: JPG, PNG, HEIC, WEBP, GIF."}), 400
 
     ext = file.filename.rsplit(".", 1)[1].lower()
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    filename = secure_filename(f"{timestamp}.{ext}")
+    name_part = _sanitize_name(g.session_name or "gast")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    hash_part = secrets.token_hex(4)
+    filename = secure_filename(f"{name_part}_{timestamp}_{hash_part}.{ext}")
     save_path = PICTURES_DIR / filename
     file.save(str(save_path))
 
@@ -385,6 +394,36 @@ def api_spotify_search():
     return jsonify(tracks)
 
 
+@app.route("/api/spotify/now-playing")
+def api_spotify_now_playing():
+    token = get_user_spotify_token()
+    if not token:
+        return jsonify({"playing": False})
+    try:
+        resp = requests.get(
+            "https://api.spotify.com/v1/me/player/currently-playing",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=5,
+        )
+        if resp.status_code == 204 or not resp.content:
+            return jsonify({"playing": False})
+        if resp.status_code != 200:
+            return jsonify({"playing": False})
+        data = resp.json()
+        if not data.get("is_playing") or data.get("currently_playing_type") != "track":
+            return jsonify({"playing": False})
+        item = data.get("item") or {}
+        images = item.get("album", {}).get("images", [])
+        return jsonify({
+            "playing": True,
+            "name": item.get("name", ""),
+            "artist": ", ".join(a["name"] for a in item.get("artists", [])),
+            "cover": images[0]["url"] if images else None,
+        })
+    except Exception:
+        return jsonify({"playing": False})
+
+
 # ---------------------------------------------------------------------------
 # Spotify OAuth2 (admin)
 # ---------------------------------------------------------------------------
@@ -403,7 +442,7 @@ def admin_spotify_authorize():
         "client_id": client_id,
         "response_type": "code",
         "redirect_uri": redirect_uri,
-        "scope": "user-modify-playback-state",
+        "scope": "user-modify-playback-state user-read-currently-playing",
         "state": state,
     }
     auth_url = "https://accounts.spotify.com/authorize?" + urllib.parse.urlencode(params)

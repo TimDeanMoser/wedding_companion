@@ -40,6 +40,14 @@
 <div class="feedback feedback-success mt-12" id="addSuccess"></div>
 <div class="feedback feedback-error mt-12" id="addError"></div>
 
+<div id="nowPlayingSection" style="display:none;" class="now-playing-section">
+  <div class="now-playing-label">
+    <span class="material-symbols-outlined">graphic_eq</span>
+    Jetzt spielt
+  </div>
+  <div class="now-playing-card" id="nowPlayingCard"></div>
+</div>
+
 <div class="queue-section">
   <h2 class="section-header" id="queueHeader" style="display:none;">Zuletzt gewünscht</h2>
   <div class="queue-list" id="queueList" style="display:none;"></div>
@@ -273,6 +281,34 @@
     if (e.key === 'Escape') clearSearch();
   });
 
+  async function loadNowPlaying() {
+    if (!SPOTIFY_READY) return;
+    const section = document.getElementById('nowPlayingSection');
+    const card = document.getElementById('nowPlayingCard');
+    try {
+      const resp = await fetch('/api/spotify/now-playing');
+      const data = await resp.json();
+      if (!data.playing) {
+        section.style.display = 'none';
+        return;
+      }
+      card.innerHTML = `
+        ${data.cover
+          ? `<img src="${data.cover}" alt="" style="width:44px;height:44px;border-radius:6px;object-fit:cover;flex-shrink:0;">`
+          : `<div class="track-cover-placeholder" style="width:44px;height:44px;flex-shrink:0;"><span class="material-symbols-outlined" aria-hidden="true">music_note</span></div>`}
+        <div class="track-info">
+          <div class="track-name">${escHtml(data.name)}</div>
+          <div class="track-artist">${escHtml(data.artist)}</div>
+        </div>
+      `;
+      section.style.display = '';
+    } catch {
+      section.style.display = 'none';
+    }
+  }
+
+  loadNowPlaying();
+  setInterval(loadNowPlaying, 15_000);
   loadQueue();
 </script>
 {% endblock %}
