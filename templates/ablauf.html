@@ -4,13 +4,23 @@
 {% block header_title %}Ablauf{% endblock %}
 
 {% block content %}
-<div class="timeline" id="timeline">
-  {% for event in events %}
-  <div class="timeline-item" data-time="{{ event.time }}" id="tl-{{ loop.index0 }}">
-    <div class="tl-time">{{ event.time }}</div>
-    <div class="tl-label">{{ event.label }}</div>
+<div class="ablauf-layout">
+  <div id="tl-banner" class="tl-banner" style="display:none"></div>
+
+  <div class="timeline-wrap">
+  <div class="timeline-card">
+    <div class="timeline" id="timeline">
+      {% for event in events %}
+      <div class="timeline-item" data-time="{{ event.time }}" id="tl-{{ loop.index0 }}">
+        <div class="tl-time">{{ event.time }}</div>
+        <div class="tl-card">
+          <div class="tl-label">{{ event.label }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
   </div>
-  {% endfor %}
+  </div>
 </div>
 
 {% if is_admin %}
@@ -22,11 +32,11 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <script>
   const WEDDING_DATE = {{ wedding_date | tojson }};
 
   function getEventDates(items) {
-    // Build monotonically-increasing Date array (handle post-midnight events)
     const dates = Array.from(items).map(el => new Date(`${WEDDING_DATE}T${el.dataset.time}`));
     for (let i = 1; i < dates.length; i++) {
       if (dates[i] <= dates[i - 1]) {
@@ -44,6 +54,83 @@
     return new Date();
   }
 
+  function formatCountdown(ms) {
+    if (ms <= 0) return '00';
+    const totalSec = Math.floor(ms / 1000);
+    const d = Math.floor(totalSec / 86400);
+    const h = Math.floor((totalSec % 86400) / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    const parts = [];
+    if (d > 0) parts.push(d);
+    if (d > 0 || h > 0) parts.push(String(h).padStart(2, '0'));
+    if (d > 0 || h > 0 || m > 0) parts.push(String(m).padStart(2, '0'));
+    parts.push(String(s).padStart(2, '0'));
+    return parts.join(':');
+  }
+
+  function renderCountdownBanner(banner, diff) {
+    banner.innerHTML = `
+      <div class="tl-banner-heading">Bald geht's los</div>
+      <div class="tl-banner-countdown">${formatCountdown(diff)}</div>
+    `;
+  }
+
+  function launchConfetti() {
+    const colors = ['#EA897E', '#C0C3FB', '#FAE8E6', '#FFFFFF', '#FDF0EF'];
+    const burst = (opts) => confetti({ spread: 70, ticks: 200, colors, ...opts });
+    burst({ particleCount: 80, angle: 70, origin: { x: 0.2, y: 1 } });
+    burst({ particleCount: 80, angle: 110, origin: { x: 0.8, y: 1 } });
+    setTimeout(() => burst({ particleCount: 60, angle: 90, origin: { x: 0.5, y: 1 } }), 300);
+  }
+
+  let countdownInterval = null;
+
+  function updateBanner(dates) {
+    const banner = document.getElementById('tl-banner');
+    if (!banner || dates.length === 0) return;
+
+    const now = getCurrentDate();
+    if (now < dates[0]) {
+      banner.style.display = '';
+      renderCountdownBanner(banner, dates[0] - now);
+      if (!countdownInterval) {
+        countdownInterval = setInterval(() => {
+          const n = getCurrentDate();
+          const d = getEventDates(document.querySelectorAll('.timeline-item'));
+          if (n >= d[0]) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            updateBanner(d);
+            updateTimeline(false);
+          } else {
+            renderCountdownBanner(banner, d[0] - n);
+          }
+        }, 1000);
+      }
+    } else {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+      banner.style.display = '';
+      banner.innerHTML = `<div class="tl-banner-party">Let's Party 🎉</div>`;
+      banner.querySelector('.tl-banner-party').addEventListener('click', launchConfetti);
+    }
+  }
+
+  let activeItem = null;
+  let returnTimer = null;
+
+  function scrollToItem(item) {
+    const card = document.querySelector('.timeline-card');
+    if (!card) return;
+    const cardRect = card.getBoundingClientRect();
+    const itemRect = item.getBoundingClientRect();
+    const target = card.scrollTop + (itemRect.top - cardRect.top) - 24;
+    card.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+  }
+
   function updateTimeline(scroll = false) {
     const items = document.querySelectorAll('.timeline-item');
     const dates = getEventDates(items);
@@ -51,34 +138,63 @@
 
     let activeIndex = -1;
     for (let i = 0; i < dates.length; i++) {
-      if (now >= dates[i]) {
-        activeIndex = i;
-      }
+      if (now >= dates[i]) activeIndex = i;
     }
 
     items.forEach((el, i) => {
       el.classList.remove('past', 'active');
-      if (i < activeIndex) {
-        el.classList.add('past');
-      } else if (i === activeIndex) {
-        el.classList.add('active');
-      }
+      if (i < activeIndex) el.classList.add('past');
+      else if (i === activeIndex) el.classList.add('active');
     });
 
-    if (scroll && activeIndex >= 0) {
-      items[activeIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    activeItem = activeIndex >= 0 ? items[activeIndex] : null;
+    updateBanner(dates);
+
+    if (scroll && activeItem) {
+      requestAnimationFrame(() => scrollToItem(activeItem));
     }
   }
 
+  history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
   updateTimeline(true);
+
+  // Scroll indicator + return-to-active behaviour
+  const timelineCard = document.querySelector('.timeline-card');
+
+  const timelineWrap = document.querySelector('.timeline-wrap');
+
+  function updateFade() {
+    if (!timelineCard || !timelineWrap) return;
+    const atTop = timelineCard.scrollTop <= 2;
+    const atBottom = timelineCard.scrollHeight - timelineCard.scrollTop <= timelineCard.clientHeight + 2;
+    timelineWrap.classList.toggle('can-scroll-up', !atTop);
+    timelineWrap.classList.toggle('can-scroll-down', !atBottom);
+  }
+
+  if (timelineCard) {
+    updateFade();
+    timelineCard.addEventListener('scroll', () => {
+      updateFade();
+      clearTimeout(returnTimer);
+      if (activeItem) {
+        returnTimer = setTimeout(() => scrollToItem(activeItem), 3000);
+      }
+    }, { passive: true });
+  }
 
   const debugInput = document.getElementById('debugTime');
   if (debugInput) {
-    debugInput.addEventListener('change', () => updateTimeline(false));
-    debugInput.addEventListener('input', () => updateTimeline(false));
+    debugInput.addEventListener('change', () => {
+      if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+      updateTimeline(false);
+    });
+    debugInput.addEventListener('input', () => {
+      if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+      updateTimeline(false);
+    });
   }
 
-  // Re-check every minute and scroll to current event
   setInterval(() => updateTimeline(true), 60_000);
 </script>
 {% endblock %}

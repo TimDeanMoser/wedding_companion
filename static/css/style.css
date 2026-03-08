@@ -357,13 +357,13 @@ body {
 /* ── Timeline ── */
 .timeline {
   position: relative;
-  padding-left: 28px;
+  padding-left: 44px;
 }
 
 .timeline::before {
   content: "";
   position: absolute;
-  left: 8px;
+  left: 12px;
   top: 0;
   bottom: 0;
   width: 2px;
@@ -372,38 +372,62 @@ body {
 
 .timeline-item {
   position: relative;
+  margin-bottom: 20px;
+}
+
+.timeline-item.past .tl-time,
+.timeline-item.past .tl-label {
+  opacity: 0.4;
+}
+
+.timeline-item.past .tl-card {
+  background: color-mix(in srgb, var(--panel) 55%, var(--bg));
+}
+
+.timeline-item.past .tl-card::before {
+  background: color-mix(in srgb, var(--accent) 40%, var(--bg));
+}
+
+.tl-time {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.tl-card {
+  position: relative;
   padding: 12px 16px;
-  margin-bottom: 10px;
   background: var(--panel);
   border-radius: var(--radius);
   border-left: 3px solid transparent;
-  transition: opacity var(--transition), border-color var(--transition);
+  transition: opacity var(--transition), border-color var(--transition), border-radius var(--transition);
 }
 
-.timeline-item::before {
+.tl-card::before {
   content: "";
   position: absolute;
-  left: -20px;
+  left: -44px;
   top: 50%;
   transform: translateY(-50%);
-  width: 12px;
-  height: 12px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--accent);
-  border: 2px solid var(--bg);
-  transition: background var(--transition);
+  transition: background var(--transition), box-shadow var(--transition);
 }
 
-.timeline-item.past {
-  opacity: 0.45;
-}
-
-.timeline-item.active {
+.timeline-item.active .tl-card {
   border-left-color: var(--primary);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
-.timeline-item.active::before {
+.timeline-item.active .tl-card::before {
   background: var(--primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 25%, transparent);
 }
 
 .timeline-item.active .tl-label {
@@ -411,19 +435,101 @@ body {
   font-weight: 700;
 }
 
-.tl-time {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
 .tl-label {
   font-size: 1rem;
   font-weight: 500;
-  margin-top: 2px;
   transition: color var(--transition);
+}
+
+/* ── Ablauf layout ── */
+.ablauf-layout {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 195px); /* 100dvh - header(55) - footer(80) - page-padding(60) */
+  gap: 12px;
+}
+
+.timeline-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-wrap::before,
+.timeline-wrap::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 64px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 1;
+}
+
+.timeline-wrap::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--bg), transparent);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.timeline-wrap::after {
+  bottom: 0;
+  height: 77px;
+  background: linear-gradient(to top, var(--bg), transparent);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.timeline-wrap.can-scroll-up::before { opacity: 1; }
+.timeline-wrap.can-scroll-down::after { opacity: 1; }
+
+.timeline-card {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+/* ── Timeline Banner ── */
+.tl-banner {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 18px 20px 20px;
+  background: var(--panel);
+  border-radius: var(--radius);
+  margin: 2px;
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--primary) 15%, transparent);
+}
+
+.tl-banner-heading {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.tl-banner-countdown {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.tl-banner-party {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
 }
 
 .debug-bar {
