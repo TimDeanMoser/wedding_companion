@@ -21,20 +21,11 @@
   </div>
 </div>
 
-<!-- Songs -->
-<div class="admin-section">
-  <h2 class="section-header">Songs</h2>
-  <button class="btn btn-outline" id="clearSongsBtn">
-    <span class="material-symbols-outlined">delete_sweep</span>
-    Alle Songs löschen
-  </button>
-</div>
-
 <!-- Fotos -->
 <div class="admin-section">
   <h2 class="section-header">Fotos</h2>
   <div class="admin-row">
-    <a href="/admin/photos/download" class="btn btn-panel" style="flex:1;">
+    <a href="/admin/photos/download" class="btn btn-primary" style="flex:1;">
       <span class="material-symbols-outlined">download</span>
       Alle herunterladen
     </a>
@@ -43,30 +34,6 @@
       Alle löschen
     </button>
   </div>
-</div>
-
-<!-- Benutzer -->
-<div class="admin-section">
-  <h2 class="section-header">Benutzer</h2>
-  {% if users %}
-  <div class="admin-list" id="userList">
-    {% for u in users %}
-    <div class="admin-list-item" id="user-{{ u.id }}">
-      <div class="admin-list-info">
-        <div class="admin-list-title">{{ u.name }}{% if u.is_admin %} <span class="admin-badge">Admin</span>{% endif %}{% if u.id == current_session_id %} <span class="admin-badge" style="background:var(--accent);color:var(--text);">Du</span>{% endif %}</div>
-        <div class="admin-list-sub">{{ u.created_at[:16] | replace('T', ' ') }}</div>
-      </div>
-      {% if u.id != current_session_id %}
-      <button class="admin-icon-btn danger" onclick="deleteUser('{{ u.id }}', '{{ u.name }}')" aria-label="Benutzer löschen">
-        <span class="material-symbols-outlined">person_remove</span>
-      </button>
-      {% endif %}
-    </div>
-    {% endfor %}
-  </div>
-  {% else %}
-  <p class="admin-empty">Keine Benutzer.</p>
-  {% endif %}
 </div>
 
 <!-- Ablauf / Timeline editor -->
@@ -83,7 +50,7 @@
     </div>
     {% endfor %}
   </div>
-  <button class="btn btn-panel mt-12" id="addTlRowBtn">
+  <button class="btn btn-outline mt-12" id="addTlRowBtn">
     <span class="material-symbols-outlined">add</span>
     Eintrag hinzufügen
   </button>
@@ -125,6 +92,43 @@
     </button>
     {% endif %}
   </div>
+  <button class="btn btn-outline danger mt-8" id="clearSongsBtn">
+    <span class="material-symbols-outlined">delete_sweep</span>
+    Alle Songs löschen
+  </button>
+</div>
+
+<!-- Benutzer -->
+<div class="admin-section">
+  <h2 class="section-header">Benutzer</h2>
+  {% if users %}
+  <div class="admin-list" id="userList">
+    {% for u in users %}
+    <div class="admin-list-item" id="user-{{ u.id }}">
+      <div class="admin-list-info">
+        <div class="admin-list-title">{{ u.name }}{% if u.is_admin %} <span class="admin-badge">Admin</span>{% endif %}{% if u.id == current_session_id %} <span class="admin-badge" style="background:var(--accent);color:var(--text);">Du</span>{% endif %}</div>
+        <div class="admin-list-sub">{{ u.created_at[:16] | replace('T', ' ') }}</div>
+      </div>
+      {% if u.id != current_session_id %}
+      <button class="admin-icon-btn danger" onclick="deleteUser('{{ u.id }}', '{{ u.name }}')" aria-label="Benutzer löschen">
+        <span class="material-symbols-outlined">person_remove</span>
+      </button>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="admin-empty">Keine Benutzer.</p>
+  {% endif %}
+</div>
+
+<!-- Full reset -->
+<div class="admin-section">
+  <h2 class="section-header">Danger Zone</h2>
+  <button class="btn admin-btn-full-reset" id="fullResetBtn">
+    <span class="material-symbols-outlined">warning</span>
+    Kompletter Reset
+  </button>
 </div>
 
 {% endblock %}
@@ -229,6 +233,18 @@
     } catch (e) {
       error.textContent = 'Netzwerkfehler.';
       error.classList.add('show');
+    }
+  });
+
+  document.getElementById('fullResetBtn').addEventListener('click', async () => {
+    if (!confirm('Kompletter Reset? Alle Fotos, Songs und Benutzer werden unwiderruflich gelöscht.')) return;
+    if (!confirm('Wirklich sicher? Diese Aktion kann nicht rückgängig gemacht werden.')) return;
+    try {
+      const resp = await fetch('/api/admin/reset', { method: 'DELETE' });
+      const data = await resp.json();
+      if (data.ok) location.reload();
+    } catch (e) {
+      alert('Fehler beim Reset.');
     }
   });
 </script>

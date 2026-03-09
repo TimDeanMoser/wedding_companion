@@ -223,6 +223,12 @@ def delete_all_songs() -> None:
         con.execute("DELETE FROM songs")
 
 
+def reset_all() -> None:
+    """Full reset: delete the database file and recreate it fresh."""
+    DB_PATH.unlink(missing_ok=True)
+    init_db()
+
+
 # ---------------------------------------------------------------------------
 # Likes
 # ---------------------------------------------------------------------------

@@ -1548,6 +1548,12 @@ html.dark .admin-badge {
   margin-bottom: 8px;
 }
 
+.admin-btn-full-reset {
+  background: var(--panel);
+  border: 3px solid red;
+  color: red;
+}
+
 .admin-stat {
   flex: 1;
   background: var(--panel);
@@ -1574,16 +1580,10 @@ html.dark .admin-badge {
   letter-spacing: 0.05em;
 }
 
-.admin-section {
-  margin-top: 28px;
-}
-
 .admin-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 320px;
-  overflow-y: auto;
 }
 
 .admin-list-item {
@@ -1591,7 +1591,7 @@ html.dark .admin-badge {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   background: var(--panel);
 }
 
@@ -1629,6 +1629,13 @@ html.dark .admin-badge {
 .admin-icon-btn .material-symbols-outlined,
 .queue-delete-btn .material-symbols-outlined {
   font-size: 1.2rem;
+}
+
+@media (hover: hover) {
+  .admin-icon-btn:hover,
+  .queue-delete-btn:hover {
+    background: var(--primary-glow);
+  }
 }
 
 .admin-icon-btn.danger:active,
@@ -1676,19 +1683,19 @@ html.dark .admin-badge {
 .tl-time-input,
 .tl-label-input {
   padding: 10px 12px;
-  border-radius: 10px;
-  border: 3px solid var(--accent);
+  border: none;
+  border-radius: var(--radius);
   background: var(--panel);
   font-size: 0.95rem;
   color: var(--text);
 }
 
 .tl-time-input { width: 110px; flex-shrink: 0; }
-.tl-label-input { flex: 1; outline: none; }
+.tl-label-input { flex: 1; }
 
 .tl-time-input:focus,
 .tl-label-input:focus {
-  border-color: var(--primary);
+  border: 3px solid var(--primary);
   outline: none;
 }
 

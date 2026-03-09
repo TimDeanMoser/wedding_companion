@@ -32,6 +32,7 @@ from database import (
     create_session,
     delete_all_songs,
     delete_all_uploads,
+    reset_all,
     delete_session,
     delete_song,
     delete_spotify_auth,
@@ -629,6 +630,24 @@ def api_admin_users_delete(session_id: str):
     if session_id == request.cookies.get(COOKIE_NAME):
         return jsonify({"ok": False, "error": "Du kannst dich nicht selbst löschen."}), 400
     delete_session(session_id)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/admin/reset", methods=["DELETE"])
+def api_admin_reset():
+    err = _require_admin()
+    if err:
+        return err
+    # Delete all physical photos
+    for f in PICTURES_DIR.glob("*"):
+        if f.is_file() and not f.name.startswith("."):
+            f.unlink()
+    # Wipe all DB tables
+    reset_all()
+    # Clear in-memory now-playing cache
+    _now_playing_cache["data"] = None
+    _now_playing_cache["ts"] = 0.0
+    _now_playing_cache["ttl"] = float(SPOTIFY_NOW_PLAYING_TTL)
     return jsonify({"ok": True})
 
 
