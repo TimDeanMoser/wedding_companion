@@ -1121,7 +1121,7 @@ html.dark .admin-badge {
   color: var(--text);
   padding: 16px;
   background: var(--panel);
-  border: 3px solid var(--primary);
+  border: 3px solid rgba(234, 137, 126, 0.5);
   border-radius: var(--radius);
   word-break: break-all;
 }

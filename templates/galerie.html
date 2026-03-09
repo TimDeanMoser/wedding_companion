@@ -238,25 +238,19 @@
     lightbox.scrollTop = 0;
     lightbox.classList.add('open');
 
-    // iOS-safe scroll lock: freeze body at current scroll position
+    // Lock scroll without moving the page
     const sy = window.scrollY;
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${sy}px`;
-    document.body.style.width = '100%';
     document.body.dataset.scrollY = sy;
+    document.documentElement.style.scrollbarGutter = 'stable';
+    document.documentElement.style.overflow = 'hidden';
   }
 
   function closeLightbox() {
     lightbox.classList.remove('open');
 
-    // Restore body scroll
-    const sy = parseInt(document.body.dataset.scrollY || '0');
-    document.body.style.overflow = '';
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
-    window.scrollTo(0, sy);
+    // Restore scroll lock styles
+    document.documentElement.style.overflow = '';
+    document.documentElement.style.scrollbarGutter = '';
 
     document.getElementById('lightboxImg').src = '';
     currentImg = null;
