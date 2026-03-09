@@ -860,7 +860,6 @@ html.dark .admin-badge {
 
 @media (hover: hover) {
   .search-btn:hover { filter: brightness(0.88); }
-  .track-card:hover { background: var(--accent); }
 }
 
 .track-card {
@@ -1096,7 +1095,7 @@ html.dark .admin-badge {
   width: 100%;
   padding: 16px;
   border-radius: var(--radius);
-  border: 3px solid var(--accent);
+  border: 3px solid var(--primary);
   background: var(--panel);
   font-size: 1.1rem;
   color: var(--text);
@@ -1203,7 +1202,7 @@ html.dark .admin-badge {
   max-height: 70dvh;
   object-fit: contain;
   border-radius: 8px;
-  border: 3px solid var(--accent);
+  border: 3px solid var(--primary);
 }
 
 .lightbox-caption {
@@ -1355,6 +1354,8 @@ html.dark .admin-badge {
   background: var(--primary);
   color: #fff;
 }
+
+#lightboxLikeCount:empty { display: none; }
 
 .lightbox-like-btn .material-symbols-outlined,
 .lightbox-delete-btn .material-symbols-outlined {
@@ -1639,7 +1640,7 @@ html.dark .admin-badge {
   background: var(--panel);
   border-radius: var(--radius);
   padding: 10px 14px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .gallery-count-badge {
