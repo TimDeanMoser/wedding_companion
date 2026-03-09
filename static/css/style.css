@@ -26,7 +26,7 @@ html.dark {
   --text: #FAE8E6;
   --text-muted: #B08A85;
   --primary-glow: rgba(234, 137, 126, 0.25);
-  --primary-tint: rgba(234, 137, 126, 0.15);
+  --primary-tint: rgba(234, 137, 126, 0.28);
   color-scheme: dark;
 }
 
@@ -42,6 +42,11 @@ html.dark {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
 }
 
 html {
@@ -103,6 +108,16 @@ html.dark .admin-badge {
   color: var(--bg);
 }
 
+@media (hover: hover) {
+  html.dark .btn-primary:hover,
+  html.dark .search-btn:hover {
+    background: var(--primary);
+    border-color: transparent;
+    color: var(--bg);
+    filter: brightness(1.14);
+  }
+}
+
 .site-header--home {
   position: static;
   background: transparent;
@@ -139,6 +154,10 @@ html.dark .admin-badge {
 
 .dark-toggle:active { opacity: 0.6; }
 
+@media (hover: hover) {
+  .dark-toggle:hover { background: var(--primary-tint); }
+}
+
 .dark-toggle .material-symbols-outlined { font-size: 1.3rem; }
 
 .back-btn {
@@ -153,10 +172,14 @@ html.dark .admin-badge {
   color: var(--primary);
   text-decoration: none;
   padding: 0;
-  transition: opacity var(--transition);
+  transition: opacity var(--transition), background var(--transition);
 }
 
 .back-btn:active { opacity: 0.6; }
+
+@media (hover: hover) {
+  .back-btn:hover { background: var(--primary-tint); }
+}
 
 .back-btn svg {
   width: 22px;
@@ -191,11 +214,13 @@ html.dark .admin-badge {
   color: var(--primary);
   cursor: pointer;
   padding: 0;
-  transition: opacity var(--transition);
+  transition: opacity var(--transition), background var(--transition);
 }
 
-.header-qr-btn:active {
-  opacity: 0.6;
+.header-qr-btn:active { opacity: 0.6; }
+
+@media (hover: hover) {
+  .header-qr-btn:hover { background: var(--primary-tint); }
 }
 
 .header-qr-btn .material-symbols-outlined {
@@ -216,10 +241,14 @@ html.dark .admin-badge {
   color: var(--primary);
   cursor: pointer;
   padding: 0;
-  transition: opacity var(--transition);
+  transition: opacity var(--transition), background var(--transition);
 }
 
 .header-info-btn:active { opacity: 0.6; }
+
+@media (hover: hover) {
+  .header-info-btn:hover { background: var(--primary-tint); }
+}
 
 .header-info-btn .material-symbols-outlined { font-size: 1.3rem; }
 
@@ -252,7 +281,7 @@ html.dark .admin-badge {
   max-width: 568px;
   background: var(--panel);
   border-radius: var(--radius);
-  border: 2px solid var(--primary);
+  border: 3px solid var(--primary);
   padding: 14px 16px;
   font-size: 1rem;
   color: var(--text);
@@ -294,8 +323,8 @@ html.dark .admin-badge {
   font-size: 1.05rem;
   font-weight: 600;
   cursor: pointer;
-  border: none;
-  transition: filter var(--transition), transform var(--transition);
+  border: 3px solid transparent;
+  transition: filter var(--transition), transform var(--transition), background var(--transition), border-color var(--transition), color var(--transition);
   text-decoration: none;
   width: 100%;
 }
@@ -307,7 +336,7 @@ html.dark .admin-badge {
 }
 
 @media (hover: hover) {
-  .btn:hover { filter: brightness(0.95); }
+  .btn:hover { background: var(--primary-tint); border-color: var(--primary); color: var(--primary); filter: none; }
 }
 
 .btn-primary {
@@ -323,7 +352,7 @@ html.dark .admin-badge {
 .btn-outline {
   background: transparent;
   color: var(--primary);
-  border: 2px solid var(--primary);
+  border: 3px solid var(--primary);
 }
 
 .btn-panel {
@@ -419,8 +448,8 @@ html.dark .admin-badge {
   display: flex;
   align-items: center;
   gap: 14px;
-  transition: filter var(--transition), transform var(--transition);
-  border: none;
+  transition: filter var(--transition), transform var(--transition), background var(--transition), border-color var(--transition);
+  border: 3px solid transparent;
 }
 
 .nav-btn:active {
@@ -430,7 +459,7 @@ html.dark .admin-badge {
 }
 
 @media (hover: hover) {
-  .nav-btn:hover { filter: brightness(0.95); }
+  .nav-btn:hover { background: var(--primary-tint); filter: none; }
 }
 
 .nav-btn .icon {
@@ -447,7 +476,7 @@ html.dark .admin-badge {
 }
 
 .nav-btn-admin {
-  border: 2px solid var(--primary);
+  border: 3px solid var(--primary);
 }
 
 /* ── Timeline ── */
@@ -462,7 +491,7 @@ html.dark .admin-badge {
   left: 12px;
   top: 0;
   bottom: 0;
-  width: 2px;
+  width: 3px;
   background: var(--accent);
 }
 
@@ -771,6 +800,11 @@ html.dark .admin-badge {
   line-height: 1;
   padding: 0;
   z-index: 201;
+  transition: background var(--transition);
+}
+
+@media (hover: hover) {
+  .lightbox-close:hover { background: var(--primary-tint); }
 }
 
 /* ── Liederwunsch ── */
@@ -790,7 +824,7 @@ html.dark .admin-badge {
   width: 100%;
   padding: 14px 40px 14px 16px;
   border-radius: var(--radius);
-  border: 2px solid transparent;
+  border: 3px solid transparent;
   background: var(--panel);
   font-size: 1rem;
   color: var(--text);
@@ -844,12 +878,12 @@ html.dark .admin-badge {
   border-radius: var(--radius);
   background: var(--primary);
   color: #fff;
-  border: none;
+  border: 3px solid transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: filter var(--transition);
+  transition: filter var(--transition), background var(--transition), border-color var(--transition), color var(--transition);
 }
 
 .search-btn .material-symbols-outlined {
@@ -859,7 +893,7 @@ html.dark .admin-badge {
 .search-btn:active { filter: brightness(0.9); }
 
 @media (hover: hover) {
-  .search-btn:hover { filter: brightness(0.88); }
+  .search-btn:hover { background: var(--primary-tint); border-color: var(--primary); color: var(--primary); filter: none; }
 }
 
 .track-card {
@@ -870,11 +904,15 @@ html.dark .admin-badge {
   border-radius: var(--radius);
   background: var(--panel);
   cursor: pointer;
-  border: 2px solid transparent;
+  border: 3px solid transparent;
   transition: border-color var(--transition), background var(--transition);
 }
 
 .track-card:active { background: var(--accent); }
+
+@media (hover: hover) {
+  .track-card:hover { background: var(--primary-tint); }
+}
 
 .track-card.selected {
   border-color: var(--primary);
@@ -980,7 +1018,7 @@ html.dark .admin-badge {
   padding: 10px;
   border-radius: 10px;
   background: var(--panel);
-  border: 2px solid var(--primary);
+  border: 3px solid var(--primary);
 }
 
 .queue-item img,
