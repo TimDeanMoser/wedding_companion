@@ -26,13 +26,17 @@
 
 {% block header %}
 <header class="site-header">
-  <a href="/" class="back-btn">
+  <a href="/" class="back-btn" aria-label="Zurück">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="15 18 9 12 15 6"/>
     </svg>
-    Zurück
   </a>
   <span class="header-title">{% block header_title %}{% endblock %}</span>
+  {% if self.page_info()|trim %}
+  <button class="header-info-btn" id="headerInfoBtn" aria-label="Seiteninformation">
+    <span class="material-symbols-outlined">info</span>
+  </button>
+  {% endif %}
 </header>
 {% endblock %}
 
@@ -59,6 +63,11 @@
 </footer>
 </div><!-- /.app-wrapper -->
 
+{% if self.page_info()|trim %}
+<div class="info-backdrop" id="infoBackdrop"></div>
+<div class="header-info-panel" id="headerInfoPanel">{% block page_info %}{% endblock %}</div>
+{% endif %}
+
 <!-- QR Modal (global) -->
 <div class="lightbox" id="globalQrModal">
   <button class="lightbox-close" id="globalQrClose">✕</button>
@@ -75,6 +84,10 @@
 {% block scripts %}{% endblock %}
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script>
+  // Disable browser scroll restoration and force scroll to top on load
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
+
   // Dark mode toggle
   (function() {
     const _btn = document.getElementById('darkToggle');
@@ -147,6 +160,47 @@
   _qrModal.addEventListener('click', e => {
     if (e.target === e.currentTarget) _closeQrModal();
   });
+
+  // Header scroll shadow
+  (function() {
+    const _sh = document.querySelector('.site-header');
+    if (!_sh) return;
+    function _update() { _sh.classList.toggle('scrolled', window.scrollY > 0); }
+    _update();
+    window.addEventListener('scroll', _update, { passive: true });
+  })();
+
+  // Info panel
+  (function() {
+    const _infoBtn = document.getElementById('headerInfoBtn');
+    const _infoPanel = document.getElementById('headerInfoPanel');
+    const _infoBackdrop = document.getElementById('infoBackdrop');
+    const _infoIcon = _infoBtn ? _infoBtn.querySelector('.material-symbols-outlined') : null;
+    const _header = document.querySelector('.site-header');
+    if (!_infoBtn || !_infoPanel) return;
+    let _infoTimer;
+    function _openInfo() {
+      _infoPanel.classList.add('open');
+      if (_infoBackdrop) _infoBackdrop.classList.add('open');
+      if (_header) _header.classList.add('info-open');
+      if (_infoIcon) _infoIcon.textContent = 'close';
+      clearTimeout(_infoTimer);
+      _infoTimer = setTimeout(_closeInfo, 4000);
+    }
+    function _closeInfo() {
+      _infoPanel.classList.remove('open');
+      if (_infoBackdrop) _infoBackdrop.classList.remove('open');
+      if (_header) _header.classList.remove('info-open');
+      if (_infoIcon) _infoIcon.textContent = 'info';
+      clearTimeout(_infoTimer);
+    }
+    _infoBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      _infoPanel.classList.contains('open') ? _closeInfo() : _openInfo();
+    });
+    document.addEventListener('click', _closeInfo);
+    if (_infoBackdrop) _infoBackdrop.addEventListener('click', _closeInfo);
+  })();
 
   // Auto-dismiss feedback messages after 3 seconds
   document.querySelectorAll('.feedback').forEach(el => {

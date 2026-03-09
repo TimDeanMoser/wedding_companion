@@ -30,8 +30,6 @@ html.dark {
   color-scheme: dark;
 }
 
-html.dark .site-header { border-color: var(--accent); }
-
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   line-height: 1;
@@ -67,30 +65,49 @@ body {
   display: flex;
   flex-direction: column;
   background: var(--bg);
+  overflow: clip;
 }
 
 /* ── Header ── */
 .site-header {
   position: sticky;
-  top: 0;
+  top: 16px;
   z-index: 100;
-  background: var(--bg);
+  background: var(--panel);
   color: var(--primary);
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 6px 0 16px;
-  height: 52px;
-  border-bottom: 3px solid var(--accent);
-  /* needed for absolute-positioned title */
-  overflow: hidden;
+  gap: 8px;
+  padding: 0 12px;
+  height: 56px;
+  border-radius: var(--radius);
+  margin: 16px 16px 0;
+  box-shadow: none;
+}
+
+.site-header.scrolled {
+  box-shadow: 0 2px 12px var(--primary-glow);
+}
+
+html.dark .site-header.scrolled {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.35);
 }
 
 .site-header--home {
+  position: static;
   background: transparent;
   border-bottom: none;
   justify-content: space-between;
-  padding-left: 6px;
+  box-shadow: none !important;
+}
+
+.site-header--home.from-panel {
+  animation: headerBgFade 0.2s ease both;
+}
+
+@keyframes headerBgFade {
+  from { background: var(--panel); }
+  to   { background: transparent; }
 }
 
 /* ── Dark mode toggle ── */
@@ -115,21 +132,25 @@ body {
 .dark-toggle .material-symbols-outlined { font-size: 1.3rem; }
 
 .back-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  background: var(--panel);
+  border-radius: 50%;
   color: var(--primary);
   text-decoration: none;
-  font-size: 0.95rem;
-  font-weight: 500;
-  padding: 4px 0;
-  white-space: nowrap;
-  flex-shrink: 0;
+  padding: 0;
+  transition: opacity var(--transition);
 }
 
+.back-btn:active { opacity: 0.6; }
+
 .back-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
 }
 
@@ -137,7 +158,7 @@ body {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -171,10 +192,75 @@ body {
   font-size: 1.3rem;
 }
 
+.header-info-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  border: none;
+  border-radius: 50%;
+  color: var(--primary);
+  cursor: pointer;
+  padding: 0;
+  transition: opacity var(--transition);
+}
+
+.header-info-btn:active { opacity: 0.6; }
+
+.header-info-btn .material-symbols-outlined { font-size: 1.3rem; }
+
+.site-header.info-open {
+  z-index: 201;
+}
+
+.info-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 199;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.info-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.header-info-panel {
+  position: fixed;
+  top: 88px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 568px;
+  background: var(--panel);
+  border-radius: var(--radius);
+  border: 2px solid var(--primary);
+  padding: 14px 16px;
+  font-size: 1rem;
+  color: var(--text-muted);
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.header-info-panel.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* ── Main content ── */
 .page-content {
   flex: 1;
-  padding: 20px 16px 40px;
+  padding: 20px 16px 16px;
   max-width: 600px;
   width: 100%;
   margin: 0 auto;
@@ -316,7 +402,7 @@ body {
   color: var(--text);
   border-radius: var(--radius);
   min-height: 62px;
-  padding: 16px 20px;
+  padding: 16px 12px;
   font-size: 1.1rem;
   font-weight: 600;
   text-decoration: none;
@@ -502,7 +588,6 @@ body {
   background: var(--panel);
   border-radius: var(--radius);
   margin: 2px;
-  box-shadow: 0 4px 20px color-mix(in srgb, var(--primary) 15%, transparent);
 }
 
 .tl-banner-heading {
@@ -515,7 +600,7 @@ body {
 }
 
 .tl-banner-countdown {
-  font-size: 3rem;
+  font-size: clamp(1.5rem, 8vw, 3rem);
   font-weight: 800;
   letter-spacing: 0.04em;
   color: var(--primary);
@@ -660,8 +745,8 @@ body {
 
 .lightbox-close {
   position: fixed;
-  top: 6px;
-  right: 6px;
+  top: 24px;
+  right: 28px;
   width: 40px;
   height: 40px;
   display: flex;
@@ -695,7 +780,7 @@ body {
   width: 100%;
   padding: 14px 40px 14px 16px;
   border-radius: var(--radius);
-  border: 3px solid var(--accent);
+  border: 2px solid transparent;
   background: var(--panel);
   font-size: 1rem;
   color: var(--text);
@@ -868,24 +953,15 @@ body {
 
 /* ── Now Playing card ── */
 .now-playing-section {
-  margin-top: 16px;
+  margin-top: 8px;
   margin-bottom: 4px;
 }
 
 .now-playing-label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.78rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--primary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 8px;
-}
-
-.now-playing-label .material-symbols-outlined {
-  font-size: 1rem;
+  padding: 12px 0 8px;
 }
 
 .now-playing-card {
@@ -895,7 +971,7 @@ body {
   padding: 10px;
   border-radius: 10px;
   background: var(--panel);
-  border: 2px solid var(--accent);
+  border: 2px solid var(--primary);
 }
 
 .queue-item img,
@@ -930,7 +1006,7 @@ body {
   color: var(--text);
   padding: 16px;
   background: var(--panel);
-  border: 3px solid var(--accent);
+  border: 3px solid var(--primary);
   border-radius: var(--radius);
   word-break: break-all;
 }
@@ -1027,24 +1103,32 @@ body {
 /* ── Zustupf payment cards ── */
 .zustupf-hero {
   text-align: center;
-  padding: 24px 0 32px;
+  padding: 30px 0 28px;
 }
 
 .zustupf-hero-icon {
-  font-size: 3rem;
+  font-size: 56px;
+  line-height: 1;
   color: var(--primary);
   display: block;
-  margin-bottom: 10px;
+  margin: 0 auto 14px;
+}
+
+.zustupf-hero h1 {
+  font-size: clamp(1.3rem, 6vw, 1.9rem);
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.01em;
 }
 
 .zustupf-hero p {
+  margin-top: 6px;
   color: var(--text-muted);
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .payment-card {
   background: var(--panel);
-  border: 3px solid var(--accent);
   border-radius: var(--radius);
   padding: 20px;
   display: flex;
@@ -1054,6 +1138,20 @@ body {
 
 .payment-card + .payment-card {
   margin-top: 16px;
+}
+
+.phone-display {
+  position: relative;
+  padding-right: 52px;
+}
+
+.phone-copy-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 0;
+  background: var(--panel);
 }
 
 .payment-card-header {
@@ -1530,7 +1628,6 @@ body {
   justify-content: space-between;
   background: var(--panel);
   border-radius: var(--radius);
-  border: 3px solid var(--accent);
   padding: 10px 14px;
   margin-bottom: 14px;
 }

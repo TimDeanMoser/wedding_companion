@@ -2,6 +2,7 @@
 
 {% block title %}Liederwunsch – Wedding Companion{% endblock %}
 {% block header_title %}Liederwunsch{% endblock %}
+{% block page_info %}Wünsch dir einen Song für die Hochzeitsplaylist!{% endblock %}
 
 {% block content %}
 {% if not spotify_ready %}
@@ -42,8 +43,7 @@
 
 <div id="nowPlayingSection" style="display:none;" class="now-playing-section">
   <div class="now-playing-label">
-    <span class="material-symbols-outlined">graphic_eq</span>
-    Jetzt spielt
+    Now Playing
   </div>
   <div class="now-playing-card" id="nowPlayingCard"></div>
 </div>

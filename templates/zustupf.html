@@ -6,7 +6,7 @@
 {% block content %}
 <div class="zustupf-hero">
   <span class="material-symbols-outlined zustupf-hero-icon" aria-hidden="true">volunteer_activism</span>
-  <p>Danke von Herzen für euren Zustupf!</p>
+  <h1>Danke von Herzen!</h1>
 </div>
 
 <div class="payment-card">
@@ -14,7 +14,14 @@
     <span class="material-symbols-outlined payment-card-icon" aria-hidden="true">payments</span>
     <span class="payment-card-title">Twint</span>
   </div>
-  {% if phone %}<div class="iban-display">{{ phone }}</div>{% endif %}
+  {% if phone %}
+  <div class="iban-display phone-display" id="phoneDisplay">
+    {{ phone }}
+    <button class="header-qr-btn phone-copy-btn" id="phoneCopyBtn" aria-label="Nummer kopieren">
+      <span class="material-symbols-outlined">content_copy</span>
+    </button>
+  </div>
+  {% endif %}
   {% if twint_url %}
   <a
     href="{{ twint_url }}"
@@ -23,7 +30,7 @@
     class="btn btn-primary"
   >
     <span class="material-symbols-outlined" aria-hidden="true">payments</span>
-    Mit Twint bezahlen
+    Twint öffnen
   </a>
   {% endif %}
 </div>
@@ -44,7 +51,35 @@
 {% endif %}
 {% endblock %}
 
+{% block page_info %}Hier kannst du uns eine Freude machen – danke von Herzen!{% endblock %}
+
 {% block scripts %}
+{% if phone %}
+<script>
+  const phoneCopyBtn = document.getElementById('phoneCopyBtn');
+  if (phoneCopyBtn) {
+    phoneCopyBtn.addEventListener('click', async () => {
+      const phone = {{ phone | tojson }};
+      try {
+        await navigator.clipboard.writeText(phone);
+      } catch {
+        const el = document.createElement('textarea');
+        el.value = phone;
+        el.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(el);
+        el.focus();
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+      }
+      phoneCopyBtn.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">check</span>';
+      setTimeout(() => {
+        phoneCopyBtn.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">content_copy</span>';
+      }, 2500);
+    });
+  }
+</script>
+{% endif %}
 {% if iban %}
 <script>
   const iban = {{ iban | tojson }};

@@ -3,7 +3,7 @@
 {% block title %}Wedding Companion{% endblock %}
 
 {% block header %}
-<header class="site-header site-header--home">
+<header class="site-header site-header--home" id="homeHeader">
   <button class="dark-toggle" id="darkToggle" aria-label="Dark Mode umschalten">
     <span class="material-symbols-outlined">dark_mode</span>
   </button>
@@ -65,5 +65,9 @@
     `Salut ${_ns}!`, `Guete Bonjour ${_ns}!`
   ];
   document.getElementById('homeGreeting').textContent = _g[Math.floor(Math.random() * _g.length)];
+  const _navType = performance.getEntriesByType('navigation')[0]?.type;
+  if (_navType !== 'reload' && document.referrer && new URL(document.referrer).origin === location.origin) {
+    document.getElementById('homeHeader').classList.add('from-panel');
+  }
 </script>
 {% endblock %}
