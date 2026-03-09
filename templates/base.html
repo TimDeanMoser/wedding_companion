@@ -166,6 +166,17 @@
     window.addEventListener('scroll', _update, { passive: true });
   })();
 
+  // Page scroll fade indicators (top + bottom)
+  (function() {
+    function _update() {
+      const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4;
+      document.body.classList.toggle('can-scroll-down', !atBottom && document.documentElement.scrollHeight > window.innerHeight);
+    }
+    _update();
+    window.addEventListener('scroll', _update, { passive: true });
+    window.addEventListener('resize', _update, { passive: true });
+  })();
+
   // Info panel
   (function() {
     const _infoBtn = document.getElementById('headerInfoBtn');
