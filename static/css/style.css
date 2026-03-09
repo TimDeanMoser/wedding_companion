@@ -611,6 +611,75 @@ html.dark .admin-badge {
 .timeline-wrap.can-scroll-up::before { opacity: 1; }
 .timeline-wrap.can-scroll-down::after { opacity: 1; }
 
+.preview-scroll-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-scroll-wrap::before,
+.preview-scroll-wrap::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 64px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 1;
+}
+
+.preview-scroll-wrap::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--bg), transparent);
+}
+
+.preview-scroll-wrap::after {
+  bottom: 0;
+  height: 77px;
+  background: linear-gradient(to top, var(--bg), transparent);
+}
+
+.preview-scroll-wrap.can-scroll-up::before { opacity: 1; }
+.preview-scroll-wrap.can-scroll-down::after { opacity: 1; }
+
+.preview-trash {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.preview-trash .material-symbols-outlined { font-size: 1.1rem; }
+
+.preview-trash:active {
+  transform: scale(0.88);
+  transition: transform 0.05s;
+}
+
+@media (hover: hover) {
+  .preview-trash:hover {
+    background: var(--primary-tint);
+    border: 3px solid var(--primary);
+    color: var(--primary);
+  }
+}
+
 .timeline-card {
   flex: 1;
   min-height: 0;

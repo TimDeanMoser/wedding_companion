@@ -11,16 +11,24 @@
   <strong>Foto auswählen</strong>
   <p>Tippe hier, um ein Foto hochzuladen</p>
   <p>JPG, PNG, HEIC, WEBP · max. 30 MB</p>
-  <div class="file-name" id="fileName"></div>
+</div>
+
+<div id="previewSection" style="display:none; position:fixed; inset:0; z-index:50; flex-direction:column; background:var(--bg);">
+  <div style="height:16px; flex-shrink:0;"></div>
+  <div class="preview-scroll-wrap" id="previewScrollWrap">
+    <div id="previewScroll" style="flex:1; overflow-y:auto; padding:0 16px;">
+      <div class="gallery-grid" id="previewGrid"></div>
+    </div>
+  </div>
+  <div style="flex-shrink:0; display:flex; flex-direction:column; gap:8px; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); background:var(--bg); border-top:1px solid var(--border);">
+    <button class="btn btn-primary" id="uploadBtn">Hochladen</button>
+    <button class="btn btn-outline" id="cancelBtn">Abbrechen</button>
+  </div>
 </div>
 
 <div class="upload-progress mt-12" id="uploadProgress">
   <div class="upload-progress-bar" id="progressBar"></div>
 </div>
-
-<button class="btn btn-primary mt-16" id="uploadBtn" style="display:none;">
-  Hochladen
-</button>
 
 <div class="feedback feedback-success mt-16" id="feedbackSuccess">
   ✓ Foto erfolgreich hochgeladen!
@@ -37,7 +45,11 @@
   const area = document.getElementById('uploadArea');
   const input = document.getElementById('fileInput');
   const uploadBtn = document.getElementById('uploadBtn');
-  const fileName = document.getElementById('fileName');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const previewSection = document.getElementById('previewSection');
+  const previewGrid = document.getElementById('previewGrid');
+  const previewScroll = document.getElementById('previewScroll');
+  const previewScrollWrap = document.getElementById('previewScrollWrap');
   const progressWrap = document.getElementById('uploadProgress');
   const progressBar = document.getElementById('progressBar');
   const feedbackSuccess = document.getElementById('feedbackSuccess');
@@ -45,6 +57,16 @@
   const galleryBtn = document.getElementById('galleryBtn');
 
   let selectedFiles = [];
+  let previewURLs = [];
+
+  function updatePreviewFade() {
+    const atTop = previewScroll.scrollTop <= 2;
+    const atBottom = previewScroll.scrollHeight - previewScroll.scrollTop <= previewScroll.clientHeight + 2;
+    previewScrollWrap.classList.toggle('can-scroll-up', !atTop);
+    previewScrollWrap.classList.toggle('can-scroll-down', !atBottom);
+  }
+
+  previewScroll.addEventListener('scroll', updatePreviewFade, { passive: true });
 
   area.addEventListener('click', () => input.click());
 
@@ -63,17 +85,94 @@
 
   input.addEventListener('change', () => handleFiles(input.files));
 
+  function revokePreviewURLs() {
+    previewURLs.forEach(url => URL.revokeObjectURL(url));
+    previewURLs = [];
+  }
+
+  function updateUploadBtn() {
+    const count = selectedFiles.length;
+    uploadBtn.textContent = count > 1 ? `${count} Hochladen` : 'Hochladen';
+    previewGrid.style.gridTemplateColumns = count === 1 ? '1fr' : '';
+    const showTrash = count > 1;
+    previewGrid.querySelectorAll('.preview-trash').forEach(btn => {
+      btn.style.display = showTrash ? 'flex' : 'none';
+    });
+  }
+
+  function removePreviewItem(index) {
+    URL.revokeObjectURL(previewURLs[index]);
+    previewURLs.splice(index, 1);
+    selectedFiles.splice(index, 1);
+    if (selectedFiles.length === 0) {
+      cancelBtn.click();
+      return;
+    }
+    // re-index trash buttons
+    previewGrid.querySelectorAll('.preview-trash').forEach((btn, i) => {
+      btn.dataset.index = i;
+    });
+    previewGrid.querySelectorAll('.gallery-item')[index].remove();
+    updateUploadBtn();
+    requestAnimationFrame(updatePreviewFade);
+  }
+
+  function buildPreviewItem(url, name, index) {
+    const item = document.createElement('div');
+    item.className = 'gallery-item';
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = name;
+    const trash = document.createElement('button');
+    trash.className = 'preview-trash';
+    trash.style.display = 'none';
+    trash.dataset.index = index;
+    trash.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+    trash.addEventListener('click', e => {
+      e.stopPropagation();
+      removePreviewItem(Number(trash.dataset.index));
+    });
+    item.appendChild(img);
+    item.appendChild(trash);
+    return item;
+  }
+
   function handleFiles(files) {
     selectedFiles = Array.from(files);
     if (selectedFiles.length === 0) return;
-    fileName.textContent = selectedFiles.length === 1
-      ? selectedFiles[0].name
-      : `${selectedFiles.length} Fotos ausgewählt`;
-    uploadBtn.style.display = 'flex';
+
     feedbackSuccess.classList.remove('show');
     feedbackError.classList.remove('show');
     galleryBtn.style.display = 'none';
+
+    revokePreviewURLs();
+    previewGrid.innerHTML = '';
+    const single = selectedFiles.length === 1;
+    previewGrid.style.gridTemplateColumns = single ? '1fr' : '';
+    selectedFiles.forEach((file, index) => {
+      const url = URL.createObjectURL(file);
+      previewURLs.push(url);
+      previewGrid.appendChild(buildPreviewItem(url, file.name, index));
+    });
+
+    updateUploadBtn();
+
+    area.style.display = 'none';
+    previewSection.style.display = 'flex';
+    previewScroll.scrollTop = 0;
+    requestAnimationFrame(updatePreviewFade);
   }
+
+  cancelBtn.addEventListener('click', () => {
+    revokePreviewURLs();
+    selectedFiles = [];
+    input.value = '';
+    previewGrid.innerHTML = '';
+    previewSection.style.display = 'none';
+    area.style.display = '';
+    feedbackSuccess.classList.remove('show');
+    feedbackError.classList.remove('show');
+  });
 
   function compressImage(file) {
     return new Promise((resolve, reject) => {
@@ -106,6 +205,7 @@
     if (selectedFiles.length === 0) return;
 
     uploadBtn.disabled = true;
+    cancelBtn.disabled = true;
     uploadBtn.textContent = 'Wird hochgeladen…';
     progressWrap.classList.add('show');
     feedbackSuccess.classList.remove('show');
@@ -157,6 +257,7 @@
     progressBar.style.width = '100%';
 
     uploadBtn.disabled = false;
+    cancelBtn.disabled = false;
     uploadBtn.textContent = 'Hochladen';
 
     if (success > 0) {
@@ -167,10 +268,12 @@
       galleryBtn.style.display = 'flex';
     }
 
+    revokePreviewURLs();
     selectedFiles = [];
-    fileName.textContent = '';
-    uploadBtn.style.display = 'none';
+    previewGrid.innerHTML = '';
     input.value = '';
+    previewSection.style.display = 'none';
+    area.style.display = '';
 
     setTimeout(() => progressWrap.classList.remove('show'), 800);
   });
