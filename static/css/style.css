@@ -665,7 +665,7 @@ html.dark .admin-badge {
   right: 6px;
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: 6px;
   border: none;
   background: var(--primary);
   color: white;
@@ -1099,7 +1099,6 @@ html.dark .admin-badge {
   padding: 10px;
   border-radius: 10px;
   background: var(--panel);
-  border: 3px solid var(--primary);
 }
 .now-playing-card-row {
   display: flex;
@@ -1363,7 +1362,7 @@ html.dark .admin-badge {
   max-width: 100%;
   max-height: 70dvh;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: var(--radius);
   border: 3px solid var(--primary);
 }
 
@@ -1380,11 +1379,16 @@ html.dark .admin-badge {
   color: #fff;
   background: var(--primary);
   border-radius: 8px;
-  padding: 10px 18px;
+  padding: 0 18px;
+  min-height: 44px;
   font-size: 0.9rem;
   font-weight: 600;
   text-decoration: none;
   transition: filter var(--transition);
+}
+
+@media (hover: hover) {
+  .lightbox-download:hover { filter: brightness(0.92); }
 }
 
 .lightbox-download:active {
@@ -1427,9 +1431,7 @@ html.dark .admin-badge {
   transition: opacity 0.3s ease, filter var(--transition);
 }
 
-.gallery-item:active img {
-  filter: brightness(0.85);
-}
+
 
 .gallery-uploader {
   position: absolute;
@@ -1497,19 +1499,29 @@ html.dark .admin-badge {
   justify-content: center;
 }
 
-.lightbox-like-btn {
+.lightbox-like-btn,
+.lightbox-delete-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  color: var(--text);
   background: var(--panel);
   border: none;
   border-radius: 8px;
-  padding: 10px 16px;
+  min-height: 44px;
+  padding: 0 16px;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: background var(--transition), color var(--transition);
+}
+
+.lightbox-like-btn { color: var(--primary);}
+.lightbox-delete-btn { color: var(--primary); }
+
+@media (hover: hover) {
+  .lightbox-like-btn:not(.liked):hover { background: var(--primary-tint); color: var(--primary); }
+  .lightbox-delete-btn:hover { background: var(--primary-tint); }
 }
 
 .lightbox-like-btn.liked {
@@ -1517,28 +1529,14 @@ html.dark .admin-badge {
   color: #fff;
 }
 
+.lightbox-like-btn:active { filter: brightness(0.92); }
+.lightbox-delete-btn:active { background: var(--primary); color: #fff; }
+
 #lightboxLikeCount:empty { display: none; }
 
 .lightbox-like-btn .material-symbols-outlined,
 .lightbox-delete-btn .material-symbols-outlined {
   font-size: 1.2rem;
-}
-
-.lightbox-delete-btn {
-  display: flex;
-  align-items: center;
-  color: var(--primary);
-  background: var(--panel);
-  border: none;
-  border-radius: 8px;
-  padding: 10px 14px;
-  cursor: pointer;
-  transition: background var(--transition), color var(--transition);
-}
-
-.lightbox-delete-btn:active {
-  background: var(--primary);
-  color: #fff;
 }
 
 /* ── Admin page ── */

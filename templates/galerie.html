@@ -44,7 +44,6 @@
     <div class="lightbox-actions">
       <button class="lightbox-like-btn" id="lightboxLikeBtn" aria-label="Gefällt mir">
         <span class="material-symbols-outlined">favorite</span>
-        <span id="lightboxLikeCount"></span>
       </button>
       <a class="lightbox-download" id="lightboxDownload" download>
         <span class="material-symbols-outlined" aria-hidden="true">download</span>
@@ -208,7 +207,6 @@
     if (!currentImg) return;
     const state = likeState.get(currentImg.name) || { liked: false, count: 0 };
     document.getElementById('lightboxLikeBtn').classList.toggle('liked', state.liked);
-    document.getElementById('lightboxLikeCount').textContent = state.count > 0 ? state.count : '';
   }
 
   // ── Lightbox ──────────────────────────────────────────────────────────────────
