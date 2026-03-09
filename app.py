@@ -64,6 +64,9 @@ COOKIE_NAME = "wc_session"
 
 _spotify_pending_states: set[str] = set()
 
+_now_playing_cache: dict = {"data": None, "ts": 0.0}
+SPOTIFY_NOW_PLAYING_TTL = int(os.environ.get("SPOTIFY_NOW_PLAYING_CACHE_TTL", 10))
+
 
 def _sanitize_name(name: str) -> str:
     name = name.lower()
@@ -397,9 +400,16 @@ def api_spotify_search():
 
 @app.route("/api/spotify/now-playing")
 def api_spotify_now_playing():
+    now = time.monotonic()
+    if _now_playing_cache["data"] is not None and now - _now_playing_cache["ts"] < SPOTIFY_NOW_PLAYING_TTL:
+        return jsonify(_now_playing_cache["data"])
+
     token = get_user_spotify_token()
     if not token:
-        return jsonify({"playing": False})
+        result = {"playing": False}
+        _now_playing_cache["data"] = result
+        _now_playing_cache["ts"] = now
+        return jsonify(result)
     try:
         resp = requests.get(
             "https://api.spotify.com/v1/me/player/currently-playing",
@@ -407,23 +417,29 @@ def api_spotify_now_playing():
             timeout=5,
         )
         if resp.status_code == 204 or not resp.content:
-            return jsonify({"playing": False})
-        if resp.status_code != 200:
-            return jsonify({"playing": False})
-        data = resp.json()
-        if not data.get("is_playing") or data.get("currently_playing_type") != "track":
-            return jsonify({"playing": False})
-        item = data.get("item") or {}
-        images = item.get("album", {}).get("images", [])
-        return jsonify({
-            "playing": True,
-            "name": item.get("name", ""),
-            "artist": ", ".join(a["name"] for a in item.get("artists", [])),
-            "cover": images[0]["url"] if images else None,
-            "cover_small": images[-1]["url"] if images else None,
-        })
+            result = {"playing": False}
+        elif resp.status_code != 200:
+            result = {"playing": False}
+        else:
+            data = resp.json()
+            if not data.get("is_playing") or data.get("currently_playing_type") != "track":
+                result = {"playing": False}
+            else:
+                item = data.get("item") or {}
+                images = item.get("album", {}).get("images", [])
+                result = {
+                    "playing": True,
+                    "name": item.get("name", ""),
+                    "artist": ", ".join(a["name"] for a in item.get("artists", [])),
+                    "cover": images[0]["url"] if images else None,
+                    "cover_small": images[-1]["url"] if images else None,
+                }
     except Exception:
-        return jsonify({"playing": False})
+        result = {"playing": False}
+
+    _now_playing_cache["data"] = result
+    _now_playing_cache["ts"] = now
+    return jsonify(result)
 
 
 # ---------------------------------------------------------------------------
