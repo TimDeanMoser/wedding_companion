@@ -46,7 +46,6 @@
     <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
     IBAN kopieren
   </button>
-  <div class="copy-feedback" id="copyFeedback"></div>
 </div>
 {% endif %}
 {% endblock %}
@@ -84,7 +83,6 @@
 <script>
   const iban = {{ iban | tojson }};
   const copyBtn = document.getElementById('copyBtn');
-  const feedback = document.getElementById('copyFeedback');
 
   copyBtn.addEventListener('click', async () => {
     try {
@@ -99,10 +97,8 @@
       document.execCommand('copy');
       document.body.removeChild(el);
     }
-    feedback.textContent = '✓ IBAN kopiert!';
     copyBtn.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">check</span> Kopiert!';
     setTimeout(() => {
-      feedback.textContent = '';
       copyBtn.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">content_copy</span> IBAN kopieren';
     }, 3000);
   });

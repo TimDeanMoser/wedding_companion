@@ -72,7 +72,7 @@
 <div class="lightbox" id="globalQrModal">
   <button class="lightbox-close" id="globalQrClose">✕</button>
   <div class="lightbox-content" style="align-items:center; gap:20px;">
-    <div style="color:var(--text); font-size:1.1rem; font-weight:600;">Einladungs-Link scannen</div>
+    <div style="color:var(--primary); font-size:1.3rem; font-weight:600;">Einladungs-Link scannen</div>
     <canvas id="globalQrCanvas" style="border-radius:12px; border:3px solid var(--primary);"></canvas>
     <button id="globalQrCopyBtn" class="btn btn-primary" style="width:100%; max-width:280px;">
       <span class="material-symbols-outlined" aria-hidden="true">link</span>
@@ -84,10 +84,6 @@
 {% block scripts %}{% endblock %}
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script>
-  // Disable browser scroll restoration and force scroll to top on load
-  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  window.scrollTo(0, 0);
-
   // Dark mode toggle
   (function() {
     const _btn = document.getElementById('darkToggle');
