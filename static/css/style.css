@@ -1094,12 +1094,17 @@ html.dark .admin-badge {
 
 .now-playing-card {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 0;
   padding: 10px;
   border-radius: 10px;
   background: var(--panel);
   border: 3px solid var(--primary);
+}
+.now-playing-card-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .queue-item img,
@@ -1111,6 +1116,44 @@ html.dark .admin-badge {
 
 .queue-item img { transition: opacity 0.3s ease; background: var(--accent); }
 .now-playing-card img { transition: opacity 0.3s ease; background: var(--accent); border-radius: 6px; }
+
+.now-playing-progress {
+  margin-top: 8px;
+  position: relative;
+  height: 3px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--primary) 25%, transparent);
+}
+/* Animating a registered custom property lets both bar and dot
+   share one keyframe while staying GPU-composited via transform. */
+@property --np-pct {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+@keyframes np-progress { from { --np-pct: 0 } to { --np-pct: 1 } }
+
+.now-playing-progress-bar {
+  height: 100%;
+  width: 100%;
+  border-radius: 2px;
+  background: var(--primary);
+  transform-origin: left center;
+  transform: scaleX(var(--np-pct));
+  will-change: transform;
+}
+.now-playing-progress-dot {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  /* translateX moves dot along track; -5px keeps it centred on its own width */
+  transform: translateX(calc(var(--np-pct) * var(--np-width, 0px) - 5px)) translateY(-50%);
+  will-change: transform;
+}
 
 /* ── Zustupf ── */
 .zustupf-section {

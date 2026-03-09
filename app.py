@@ -64,7 +64,7 @@ COOKIE_NAME = "wc_session"
 
 _spotify_pending_states: set[str] = set()
 
-_now_playing_cache: dict = {"data": None, "ts": 0.0}
+_now_playing_cache: dict = {"data": None, "ts": 0.0, "ttl": 10.0}
 SPOTIFY_NOW_PLAYING_TTL = int(os.environ.get("SPOTIFY_NOW_PLAYING_CACHE_TTL", 10))
 
 
@@ -401,7 +401,7 @@ def api_spotify_search():
 @app.route("/api/spotify/now-playing")
 def api_spotify_now_playing():
     now = time.monotonic()
-    if _now_playing_cache["data"] is not None and now - _now_playing_cache["ts"] < SPOTIFY_NOW_PLAYING_TTL:
+    if _now_playing_cache["data"] is not None and now - _now_playing_cache["ts"] < _now_playing_cache["ttl"]:
         return jsonify(_now_playing_cache["data"])
 
     token = get_user_spotify_token()
@@ -411,6 +411,7 @@ def api_spotify_now_playing():
         _now_playing_cache["ts"] = now
         return jsonify(result)
     try:
+        print("[Spotify] Fetching now-playing from API", flush=True)
         resp = requests.get(
             "https://api.spotify.com/v1/me/player/currently-playing",
             headers={"Authorization": f"Bearer {token}"},
@@ -427,16 +428,33 @@ def api_spotify_now_playing():
             else:
                 item = data.get("item") or {}
                 images = item.get("album", {}).get("images", [])
+                progress_ms = data.get("progress_ms", 0)
+                duration_ms = item.get("duration_ms", 0)
+                remaining_s = max(0, (duration_ms - progress_ms) / 1000)
+                # Cache until 5s before song ends, but at least 5s and at most 15s
+                # 15s cap keeps skip detection lag acceptable
+                dynamic_ttl = max(5.0, min(remaining_s - 5, 15.0))
                 result = {
                     "playing": True,
+                    "track_id": item.get("id", ""),
                     "name": item.get("name", ""),
                     "artist": ", ".join(a["name"] for a in item.get("artists", [])),
                     "cover": images[0]["url"] if images else None,
                     "cover_small": images[-1]["url"] if images else None,
+                    "progress_ms": progress_ms,
+                    "duration_ms": duration_ms,
+                    "fetched_at": int(time.time() * 1000),
+                    "next_poll_ms": int(dynamic_ttl * 1000),
                 }
+                _now_playing_cache["ttl"] = dynamic_ttl
+                print(f"[Spotify] Cache TTL set to {dynamic_ttl:.1f}s ({remaining_s:.0f}s remaining in track)", flush=True)
     except Exception:
         result = {"playing": False}
 
+    if not result.get("playing"):
+        _now_playing_cache["ttl"] = float(SPOTIFY_NOW_PLAYING_TTL)
+        if result.get("next_poll_ms") is None:
+            result["next_poll_ms"] = SPOTIFY_NOW_PLAYING_TTL * 1000
     _now_playing_cache["data"] = result
     _now_playing_cache["ts"] = now
     return jsonify(result)
