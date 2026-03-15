@@ -15,13 +15,14 @@ WEDDING_DATE = "2026-04-25"
 # Timeline events — edit these to match your actual wedding schedule
 # ---------------------------------------------------------------------------
 ABLAUF_EVENTS = [
-    {"time": "13:00", "label": "Empfang der Gäste"},
-    {"time": "14:00", "label": "Standesamtliche Trauung"},
-    {"time": "15:00", "label": "Sektempfang & Fotos"},
-    {"time": "16:30", "label": "Aperitif im Garten"},
-    {"time": "18:00", "label": "Einzug ins Festzelt"},
-    {"time": "18:30", "label": "Abendessen"},
-    {"time": "20:00", "label": "Reden & Überraschungen"},
-    {"time": "21:00", "label": "Hochzeitstorte"},
-    {"time": "21:30", "label": "Eröffnungstanz"},
+    {"date": "2026-04-25", "time": "11:00", "label": "Empfang der Gäste"},
+    {"date": "2026-04-25", "time": "12:00", "label": "Brunch"},
+    {"date": "2026-04-25", "time": "14:15", "label": "Übergang Trauung"},
+    {"date": "2026-04-25", "time": "14:30", "label": "Trauung"},
+    {"date": "2026-04-25", "time": "15:30", "label": "Fotos und kurze Pause"},
+    {"date": "2026-04-25", "time": "16:00", "label": "Dessert & Kaffee"},
+    {"date": "2026-04-25", "time": "18:00", "label": "Verabschiedung Steinmaur"},
+    {"date": "2026-04-25", "time": "22:30", "label": "Empfang Albani"},
+    {"date": "2026-04-25", "time": "23:00", "label": "Party Time"},
+    {"date": "2026-04-26", "time": "04:00", "label": "Letzte Runde"},
 ]

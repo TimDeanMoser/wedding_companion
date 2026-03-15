@@ -171,7 +171,7 @@ def index():
 
 @app.route("/ablauf")
 def ablauf():
-    events = sorted(load_timeline(), key=lambda e: e["time"])
+    events = sorted(load_timeline(), key=lambda e: (e["date"], e["time"]))
     return render_template("ablauf.html", events=events, wedding_date=WEDDING_DATE, is_admin=g.is_admin)
 
 
@@ -603,11 +603,15 @@ def api_admin_timeline():
         return jsonify({"ok": False, "error": "Ungültige Daten."}), 400
     cleaned = sorted(
         [
-            {"time": str(e.get("time", "")).strip(), "label": str(e.get("label", "")).strip()}
+            {
+                "date": str(e.get("date", "2026-04-25")).strip(),
+                "time": str(e.get("time", "")).strip(),
+                "label": str(e.get("label", "")).strip(),
+            }
             for e in events
             if e.get("time") and e.get("label")
         ],
-        key=lambda e: e["time"],
+        key=lambda e: (e["date"], e["time"]),
     )
     save_timeline(cleaned)
     return jsonify({"ok": True})

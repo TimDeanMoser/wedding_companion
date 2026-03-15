@@ -56,6 +56,7 @@ def init_db() -> None:
             CREATE TABLE IF NOT EXISTS timeline_events (
                 id         INTEGER PRIMARY KEY AUTOINCREMENT,
                 sort_order INTEGER NOT NULL,
+                date       TEXT NOT NULL DEFAULT '2026-04-25',
                 time       TEXT NOT NULL,
                 label      TEXT NOT NULL
             );
@@ -65,14 +66,19 @@ def init_db() -> None:
             con.execute("ALTER TABLE sessions ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0")
         except sqlite3.OperationalError:
             pass  # column already exists
+        # Migrate: add date column to timeline_events if it doesn't exist
+        try:
+            con.execute("ALTER TABLE timeline_events ADD COLUMN date TEXT NOT NULL DEFAULT '2026-04-25'")
+        except sqlite3.OperationalError:
+            pass  # column already exists
         # Seed timeline from config if table is empty
         count = con.execute("SELECT COUNT(*) FROM timeline_events").fetchone()[0]
         if count == 0:
             from config import ABLAUF_EVENTS
             for i, ev in enumerate(ABLAUF_EVENTS):
                 con.execute(
-                    "INSERT INTO timeline_events (sort_order, time, label) VALUES (?, ?, ?)",
-                    (i, ev["time"], ev["label"]),
+                    "INSERT INTO timeline_events (sort_order, date, time, label) VALUES (?, ?, ?, ?)",
+                    (i, ev.get("date", "2026-04-25"), ev["time"], ev["label"]),
                 )
 
 
@@ -309,9 +315,9 @@ def save_spotify_auth(access_token: str, refresh_token: str, expires_at: float) 
 def load_timeline() -> list[dict]:
     with _connect() as con:
         rows = con.execute(
-            "SELECT time, label FROM timeline_events ORDER BY sort_order ASC"
+            "SELECT date, time, label FROM timeline_events ORDER BY sort_order ASC"
         ).fetchall()
-    return [{"time": r["time"], "label": r["label"]} for r in rows]
+    return [{"date": r["date"], "time": r["time"], "label": r["label"]} for r in rows]
 
 
 def save_timeline(events: list[dict]) -> None:
@@ -319,6 +325,6 @@ def save_timeline(events: list[dict]) -> None:
         con.execute("DELETE FROM timeline_events")
         for i, ev in enumerate(events):
             con.execute(
-                "INSERT INTO timeline_events (sort_order, time, label) VALUES (?, ?, ?)",
-                (i, ev["time"], ev["label"]),
+                "INSERT INTO timeline_events (sort_order, date, time, label) VALUES (?, ?, ?, ?)",
+                (i, ev.get("date", "2026-04-25"), ev["time"], ev["label"]),
             )

@@ -42,6 +42,7 @@
   <div id="timelineEditor">
     {% for ev in events %}
     <div class="timeline-row" data-index="{{ loop.index0 }}">
+      <input type="date" class="tl-date-input" value="{{ ev.date }}">
       <input type="time" class="tl-time-input" value="{{ ev.time }}">
       <input type="text" class="tl-label-input" value="{{ ev.label }}" placeholder="Beschreibung">
       <button class="admin-icon-btn danger" onclick="this.closest('.timeline-row').remove()" aria-label="Eintrag löschen">
@@ -190,6 +191,7 @@
     const row = document.createElement('div');
     row.className = 'timeline-row';
     row.innerHTML = `
+      <input type="date" class="tl-date-input" value="2026-04-25">
       <input type="time" class="tl-time-input" value="">
       <input type="text" class="tl-label-input" placeholder="Beschreibung">
       <button class="admin-icon-btn danger" onclick="this.closest('.timeline-row').remove()" aria-label="Eintrag löschen">
@@ -202,6 +204,7 @@
   document.getElementById('saveTlBtn').addEventListener('click', async () => {
     const rows = document.querySelectorAll('#timelineEditor .timeline-row');
     const events = Array.from(rows).map(row => ({
+      date: row.querySelector('.tl-date-input').value,
       time: row.querySelector('.tl-time-input').value,
       label: row.querySelector('.tl-label-input').value.trim(),
     })).filter(ev => ev.time && ev.label);
@@ -222,7 +225,11 @@
         // Re-sort rows by time in the DOM
         const editor = document.getElementById('timelineEditor');
         const rows = Array.from(editor.querySelectorAll('.timeline-row'));
-        rows.sort((a, b) => a.querySelector('.tl-time-input').value.localeCompare(b.querySelector('.tl-time-input').value));
+        rows.sort((a, b) => {
+          const da = a.querySelector('.tl-date-input').value + 'T' + a.querySelector('.tl-time-input').value;
+          const db = b.querySelector('.tl-date-input').value + 'T' + b.querySelector('.tl-time-input').value;
+          return da.localeCompare(db);
+        });
         rows.forEach(r => editor.appendChild(r));
         success.textContent = '✓ Ablauf gespeichert!';
         success.classList.add('show');
