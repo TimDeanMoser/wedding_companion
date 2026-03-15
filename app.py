@@ -191,6 +191,11 @@ def liederwunsch():
     return render_template("liederwunsch.html", is_admin=g.is_admin, spotify_ready=spotify_ready)
 
 
+@app.route("/anreise")
+def anreise():
+    return render_template("anreise.html", is_admin=g.is_admin)
+
+
 @app.route("/zustupf")
 def zustupf():
     iban = os.environ.get("WEDDING_IBAN", "")

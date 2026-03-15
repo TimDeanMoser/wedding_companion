@@ -1539,6 +1539,82 @@ html.dark .admin-badge {
   font-size: 1.2rem;
 }
 
+/* ── Anreise page ── */
+.anreise-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.anreise-address-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.anreise-address-card .btn + .btn {
+  margin-top: -6px;
+}
+
+.anreise-separator {
+  border: none;
+  border-top: 3px dashed var(--primary);
+  margin: 0;
+}
+
+.anreise-card-label {
+  margin: 0 0 2px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--primary);
+}
+
+.anreise-address-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.anreise-address-icon {
+  font-size: 24px;
+  color: var(--primary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.anreise-map-wrapper img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius);
+}
+
+.anreise-bus-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.anreise-bus-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.anreise-bus-icon {
+  font-size: 24px;
+  color: var(--primary);
+}
+
+.anreise-bus-placeholder {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
 /* ── Admin page ── */
 .admin-stats {
   display: flex;

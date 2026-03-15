@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Anreise – Wedding Companion{% endblock %}
+{% block header_title %}Anreise{% endblock %}
+{% block page_info %}Hier findest du alle Infos zur Anreise an unsere Hochzeits-Location sowie zur Afterparty.{% endblock %}
+
+{% block content %}
+
+  <div class="zustupf-hero">
+  <span class="material-symbols-outlined zustupf-hero-icon" aria-hidden="true">location_on</span>
+  <h1>Hier findet's statt</h1>
+</div>
+<div class="anreise-wrapper">
+
+
+<div class="card anreise-address-card">
+  <p class="anreise-card-label">Hochzeits-Location</p>
+  <div class="anreise-address-text">
+    <span class="material-symbols-outlined anreise-address-icon" aria-hidden="true">storefront</span>
+    <div>
+      <strong>Orchideenhaus Müller</strong><br>
+      Salenstrasse<br>
+      8162 Steinmaur
+    </div>
+  </div>
+  <button class="btn btn-outline" id="copyAddressBtn">
+    <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
+    Adresse kopieren
+  </button>
+  <a
+    href="https://www.google.com/maps/dir/?api=1&destination=Orchideenhaus+M%C3%BCller%2C+Salenstrasse%2C+8162+Steinmaur"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="btn btn-primary"
+  >
+    <span class="material-symbols-outlined" aria-hidden="true">map</span>
+    Google Maps öffnen
+  </a>
+</div>
+
+<div class="anreise-map-wrapper">
+  <img src="/static/lageplan.png" alt="Lageplan Orchideenhaus Müller Steinmaur">
+</div>
+
+
+
+<div class="card anreise-bus-card">
+  <div class="anreise-bus-header">
+    <span class="material-symbols-outlined anreise-bus-icon" aria-hidden="true">directions_bus</span>
+    <strong>Anreise mit Car aus Winti</strong>
+  </div>
+  <p class="anreise-bus-placeholder">Informationen zur Anreise mit userem gemieteten Bus aus Winterthur folgen in Kürze.</p>
+</div>
+
+
+<hr class="anreise-separator">
+
+<div class="card anreise-address-card">
+  <p class="anreise-card-label">Afterparty</p>
+  <div class="anreise-address-text">
+    <span class="material-symbols-outlined anreise-address-icon" aria-hidden="true">nightlife</span>
+    <div>
+      <strong>Albani Music Club</strong><br>
+      Steinberggasse 16<br>
+      8400 Winterthur
+    </div>
+  </div>
+  <button class="btn btn-outline" id="copyAddressBtn2">
+    <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
+    Adresse kopieren
+  </button>
+  <a
+    href="https://www.google.com/maps/dir/?api=1&destination=Albani+Music+Club%2C+Steinberggasse+16%2C+8400+Winterthur"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="btn btn-primary"
+  >
+    <span class="material-symbols-outlined" aria-hidden="true">map</span>
+    Google Maps öffnen
+  </a>
+</div>
+
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function setupCopyBtn(id, text) {
+    document.getElementById(id).addEventListener('click', function() {
+      navigator.clipboard.writeText(text).then(() => {
+        const icon = this.querySelector('.material-symbols-outlined');
+        icon.textContent = 'check';
+        this.style.color = 'var(--primary)';
+        setTimeout(() => { icon.textContent = 'content_copy'; this.style.color = ''; }, 2000);
+      });
+    });
+  }
+  setupCopyBtn('copyAddressBtn', 'Orchideenhaus Müller, Salenstrasse, 8162 Steinmaur');
+  setupCopyBtn('copyAddressBtn2', 'Albani Music Club, Steinberggasse 16, 8400 Winterthur');
+</script>
+{% endblock %}
